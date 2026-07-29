@@ -1,0 +1,257 @@
+import { useState } from 'react'
+import { message } from 'antd'
+import type { TimeSheetRow } from '../types/timesheet'
+import { useI18n } from '../i18n/useI18n'
+import { formatDayMonth } from '../utils/dates'
+import { buildEntries, rowState } from '../utils/timesheet'
+import { readKey, writeKey } from '../utils/keyStorage'
+
+export interface ClockifyWorkspace {
+  id: string
+  name: string
+}
+
+export interface ClockifyProject {
+  id: string
+  name: string
+}
+
+export type RowStatus = 'loading' | 'done' | 'error'
+
+const BASE_URL = 'https://api.clockify.me/api/v1'
+
+async function fetchWorkspaces(apiKey: string): Promise<ClockifyWorkspace[]> {
+  const res = await fetch(`${BASE_URL}/workspaces`, {
+    headers: { 'X-Api-Key': apiKey },
+  })
+  if (!res.ok) throw new Error('invalid clockify api key')
+  return res.json()
+}
+
+async function fetchProjects(apiKey: string, workspaceId: string): Promise<ClockifyProject[]> {
+  const res = await fetch(`${BASE_URL}/workspaces/${workspaceId}/projects?page-size=500`, {
+    headers: { 'X-Api-Key': apiKey },
+  })
+  if (!res.ok) throw new Error('failed to load projects')
+  return res.json()
+}
+
+async function postTimeEntry(
+  apiKey: string,
+  workspaceId: string,
+  projectId: string,
+  row: TimeSheetRow,
+): Promise<void> {
+  if (rowState(row) !== 'ready') throw new Error(`row not ready: ${row.date}`)
+
+  await Promise.all(
+    buildEntries(row).map((entry) =>
+      fetch(`${BASE_URL}/workspaces/${workspaceId}/time-entries`, {
+        method: 'POST',
+        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...entry, projectId, billable: false }),
+      }).then((res) => {
+        if (!res.ok) throw new Error(`failed to insert entry of ${row.date}`)
+      }),
+    ),
+  )
+}
+
+export function useClockify() {
+  const { t } = useI18n()
+  const [apiKey, setApiKeyState] = useState(() => readKey('clockify_api_key'))
+  const [workspaces, setWorkspaces] = useState<ClockifyWorkspace[]>([])
+  const [selectedWorkspace, setSelectedWorkspace] = useState<string | undefined>()
+  const [projects, setProjects] = useState<ClockifyProject[]>([])
+  const [selectedProject, setSelectedProject] = useState<string | undefined>()
+  const [loadingWorkspaces, setLoadingWorkspaces] = useState(false)
+  const [loadingProjects, setLoadingProjects] = useState(false)
+  const [insertingAll, setInsertingAll] = useState(false)
+  const [rowStatus, setRowStatus] = useState<Map<number, RowStatus>>(new Map())
+  const [rowProject, setRowProject] = useState<Map<number, string>>(new Map())
+
+  const clockifyConnected = !!(apiKey && selectedWorkspace && projects.length > 0)
+
+  function setApiKey(value: string) {
+    setApiKeyState(value)
+    writeKey('clockify_api_key', value)
+  }
+
+  function setRowSt(idx: number, status: RowStatus) {
+    setRowStatus(prev => new Map(prev).set(idx, status))
+  }
+
+  function setRowProjectOverride(idx: number, projectId: string) {
+    setRowProject(prev => new Map(prev).set(idx, projectId))
+  }
+
+  /** Undefined until either a bulk project or a per-row override is picked. */
+  function resolveProject(idx: number): string | undefined {
+    return rowProject.get(idx) ?? selectedProject
+  }
+
+  /** Per-row overrides are dropped so a bulk pick actually reaches every row. */
+  function setBulkProject(projectId: string) {
+    setSelectedProject(projectId)
+    setRowProject(new Map())
+  }
+
+  function resetInsertionState() {
+    setRowStatus(new Map())
+    setRowProject(new Map())
+  }
+
+  /** Editing one row must not wipe the other rows' inserted badges. */
+  function clearRowStatus(idx: number) {
+    setRowStatus(prev => {
+      if (!prev.has(idx)) return prev
+      const next = new Map(prev)
+      next.delete(idx)
+      return next
+    })
+  }
+
+  async function handleWorkspaceChange(wsId: string) {
+    setSelectedWorkspace(wsId)
+    setSelectedProject(undefined)
+    setProjects([])
+    setLoadingProjects(true)
+    try {
+      const ps = await fetchProjects(apiKey, wsId)
+      setProjects(ps)
+    } catch {
+      message.error(t.messages.projectsError)
+    } finally {
+      setLoadingProjects(false)
+    }
+  }
+
+  function disconnect() {
+    setApiKey('')
+    setWorkspaces([])
+    setSelectedWorkspace(undefined)
+    setProjects([])
+    setSelectedProject(undefined)
+    resetInsertionState()
+  }
+
+  async function handleConnect() {
+    if (!apiKey.trim()) return
+    setLoadingWorkspaces(true)
+    setWorkspaces([])
+    setSelectedWorkspace(undefined)
+    setProjects([])
+    setSelectedProject(undefined)
+    try {
+      const ws = await fetchWorkspaces(apiKey.trim())
+      setWorkspaces(ws)
+      if (ws.length === 1) {
+        await handleWorkspaceChange(ws[0].id)
+      }
+    } catch {
+      message.error(t.messages.invalidClockifyKey)
+    } finally {
+      setLoadingWorkspaces(false)
+    }
+  }
+
+  async function handleInsertRow(idx: number, row: TimeSheetRow) {
+    const projectId = resolveProject(idx)
+    if (!projectId) {
+      message.error(t.messages.missingProject)
+      return
+    }
+
+    const state = rowState(row)
+    if (state === 'empty') {
+      message.info(t.messages.rowEmpty(formatDayMonth(row.date)))
+      return
+    }
+    if (state === 'invalid') {
+      setRowSt(idx, 'error')
+      message.error(t.messages.rowInvalid(formatDayMonth(row.date)))
+      return
+    }
+
+    setRowSt(idx, 'loading')
+    try {
+      await postTimeEntry(apiKey, selectedWorkspace!, projectId, row)
+      setRowSt(idx, 'done')
+      message.success(t.messages.dayInserted(formatDayMonth(row.date)))
+    } catch {
+      setRowSt(idx, 'error')
+      message.error(t.messages.dayError(formatDayMonth(row.date)))
+    }
+  }
+
+  /**
+   * Receives the full array on purpose: rowStatus/rowProject are keyed by index and
+   * must stay aligned with the table's row keys, so filtering happens inside.
+   */
+  async function handleInsertAll(rows: TimeSheetRow[]) {
+    const planned = rows.map((row, i) => ({
+      i,
+      row,
+      state: rowState(row),
+      projectId: resolveProject(i),
+    }))
+    const invalid = planned.filter(p => p.state === 'invalid')
+    const skipped = planned.filter(p => p.state === 'empty').length
+    const targets = planned.filter(p => p.state === 'ready' && p.projectId)
+
+    invalid.forEach(p => setRowSt(p.i, 'error'))
+
+    if (targets.length === 0) {
+      const readyWithoutProject = planned.some(p => p.state === 'ready' && !p.projectId)
+      message.warning(readyWithoutProject ? t.messages.missingProject : t.messages.nothingToInsert)
+      return
+    }
+
+    setInsertingAll(true)
+    let failed = 0
+    await Promise.all(
+      targets.map(async ({ i, row, projectId }) => {
+        setRowSt(i, 'loading')
+        try {
+          await postTimeEntry(apiKey, selectedWorkspace!, projectId!, row)
+          setRowSt(i, 'done')
+        } catch {
+          setRowSt(i, 'error')
+          failed++
+        }
+      })
+    )
+    setInsertingAll(false)
+
+    const errored = failed + invalid.length
+    if (errored === 0 && skipped === 0) message.success(t.messages.allInserted)
+    else message.warning(t.messages.insertSummary(targets.length - failed, errored, skipped))
+  }
+
+  return {
+    apiKey,
+    setApiKey,
+    workspaces,
+    selectedWorkspace,
+    projects,
+    selectedProject,
+    setBulkProject,
+    loadingWorkspaces,
+    loadingProjects,
+    insertingAll,
+    rowStatus,
+    rowProject,
+    clockifyConnected,
+    resolveProject,
+    handleConnect,
+    disconnect,
+    handleWorkspaceChange,
+    handleInsertRow,
+    handleInsertAll,
+    setRowProjectOverride,
+    resetInsertionState,
+    clearRowStatus,
+  }
+}
+
+export type ClockifyVM = ReturnType<typeof useClockify>

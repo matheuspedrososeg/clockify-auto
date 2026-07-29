@@ -1,0 +1,96 @@
+import type { ThemeConfig } from 'antd'
+
+const FONT_FAMILY =
+  "'BMW Type Next Latin', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+
+const COLORS = {
+  primary: '#1c69d4',
+  primaryActive: '#0653b6',
+  ink: '#262626',
+  body: '#3c3c3c',
+  muted: '#6b6b6b',
+  mutedSoft: '#9a9a9a',
+  hairline: '#e6e6e6',
+  hairlineStrong: '#cccccc',
+  canvas: '#ffffff',
+  surfaceSoft: '#f7f7f7',
+  surfaceCard: '#fafafa',
+  surfaceStrong: '#ebebeb',
+  success: '#22c55e',
+  warning: '#f59e0b',
+  error: '#dc2626',
+}
+
+export const antdTheme: ThemeConfig = {
+  token: {
+    colorPrimary: COLORS.primary,
+    colorPrimaryHover: COLORS.primary,
+    colorPrimaryActive: COLORS.primaryActive,
+    colorLink: COLORS.primary,
+    colorSuccess: COLORS.success,
+    colorWarning: COLORS.warning,
+    colorError: COLORS.error,
+    colorBorder: COLORS.hairline,
+    colorBorderSecondary: COLORS.hairline,
+    colorBgContainer: COLORS.canvas,
+    colorBgLayout: COLORS.canvas,
+    colorText: COLORS.body,
+    colorTextHeading: COLORS.ink,
+    colorTextDescription: COLORS.muted,
+    colorTextPlaceholder: COLORS.mutedSoft,
+    colorTextDisabled: COLORS.mutedSoft,
+    borderRadius: 0,
+    borderRadiusLG: 0,
+    borderRadiusSM: 0,
+    borderRadiusXS: 0,
+    controlHeight: 48,
+    fontSize: 16,
+    fontFamily: FONT_FAMILY,
+    boxShadow: 'none',
+    boxShadowSecondary: 'none',
+    boxShadowTertiary: 'none',
+  },
+  components: {
+    Button: {
+      primaryShadow: 'none',
+      defaultShadow: 'none',
+      dangerShadow: 'none',
+      defaultBorderColor: COLORS.hairlineStrong,
+      contentFontSize: 14,
+      fontWeight: 700,
+    },
+    Input: {
+      activeBorderColor: COLORS.ink,
+      hoverBorderColor: COLORS.hairlineStrong,
+      activeShadow: 'none',
+      paddingBlock: 12,
+    },
+    Select: {
+      optionSelectedBg: COLORS.surfaceSoft,
+      optionSelectedColor: COLORS.ink,
+      activeBorderColor: COLORS.ink,
+      hoverBorderColor: COLORS.hairlineStrong,
+      activeOutlineColor: 'transparent',
+    },
+    Segmented: {
+      trackBg: COLORS.surfaceSoft,
+      trackPadding: 0,
+      itemSelectedBg: COLORS.ink,
+      itemSelectedColor: COLORS.canvas,
+      itemHoverBg: COLORS.surfaceStrong,
+    },
+    Table: {
+      headerBg: COLORS.surfaceStrong,
+      headerColor: COLORS.ink,
+      headerSplitColor: COLORS.hairlineStrong,
+      borderColor: COLORS.hairline,
+      rowHoverBg: COLORS.surfaceSoft,
+      rowExpandedBg: COLORS.surfaceCard,
+      cellFontSize: 14,
+    },
+    Tag: {
+      defaultBg: COLORS.surfaceSoft,
+      defaultColor: COLORS.body,
+    },
+  },
+}

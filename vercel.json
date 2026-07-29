@@ -1,0 +1,7 @@
+{
+  "rewrites": [
+    { "source": "/github-device/code", "destination": "/api/github/device-code" },
+    { "source": "/github-oauth/access_token", "destination": "/api/github/access-token" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

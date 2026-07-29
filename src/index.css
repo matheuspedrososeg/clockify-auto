@@ -1,0 +1,72 @@
+:root {
+  --primary: #1c69d4;
+  --primary-active: #0653b6;
+  --primary-disabled: #d6d6d6;
+
+  --ink: #262626;
+  --body: #3c3c3c;
+  --body-strong: #1a1a1a;
+  --muted: #6b6b6b;
+  --muted-soft: #9a9a9a;
+
+  --hairline: #e6e6e6;
+  --hairline-strong: #cccccc;
+
+  --canvas: #ffffff;
+  --surface-soft: #f7f7f7;
+  --surface-card: #fafafa;
+  --surface-strong: #ebebeb;
+  --surface-dark: #1a2129;
+  --surface-dark-elevated: #262e38;
+
+  --on-primary: #ffffff;
+  --on-dark: #ffffff;
+  --on-dark-soft: #bbbbbb;
+
+  --success: #22c55e;
+  --warning: #f59e0b;
+  --error: #dc2626;
+
+  --space-xxs: 4px;
+  --space-xs: 8px;
+  --space-sm: 12px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-xxl: 48px;
+  --space-section: 80px;
+
+  --sans: 'BMW Type Next Latin', 'Inter', system-ui, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, sans-serif;
+  --mono: ui-monospace, Consolas, monospace;
+
+  font-family: var(--sans);
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 1.55;
+  letter-spacing: 0;
+  color: var(--body);
+  background: var(--canvas);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background: var(--canvas);
+}
+
+#root {
+  min-height: 100svh;
+  box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--sans);
+  font-weight: 700;
+  letter-spacing: 0;
+  color: var(--ink);
+  margin: 0;
+}
