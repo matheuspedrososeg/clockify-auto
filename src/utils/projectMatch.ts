@@ -8,6 +8,11 @@ export interface MatchProject {
   name: string
 }
 
+export interface MatchAlias {
+  repo: string
+  target: string
+}
+
 export interface ProjectSuggestion {
   projectId: string
   votes: number
@@ -22,7 +27,6 @@ interface ProjectMatch {
   score: number
 }
 
-/** A repo name is a strong signal; message words only break a tie the repo could not. */
 const MESSAGE_WEIGHT = 0.35
 const REPO_TRUST = 0.35
 const REPO_MIN_TOKEN = 3
@@ -100,10 +104,6 @@ export interface Matcher {
   size: number
 }
 
-/**
- * Project names are normalized once and every score is cached per token, because commit
- * messages repeat the same words over and over and scoring one is O(projects × words).
- */
 export function createMatcher(projects: MatchProject[]): Matcher {
   const prepared: PreparedProject[] = projects.map(project => {
     const normalized = normalize(project.name)
@@ -193,9 +193,75 @@ function pickTopRepo(repos: Map<string, number>): string {
   return top
 }
 
+interface AliasEntry {
+  tokens: string[]
+  weight: number
+  target: string
+}
+
+export interface AliasIndex {
+  exact: Map<string, string>
+  partial: AliasEntry[]
+  size: number
+}
+
+const EMPTY_ALIAS_INDEX: AliasIndex = { exact: new Map(), partial: [], size: 0 }
+
+export function buildAliasIndex(aliases: MatchAlias[]): AliasIndex {
+  const exact = new Map<string, string>()
+  const partial: AliasEntry[] = []
+
+  for (const alias of aliases) {
+    const key = normalize(alias.repo)
+    const target = alias.target.trim()
+    if (!key || !target) continue
+    exact.set(key, target)
+    const tokens = key.split(' ')
+    const weight = tokens.join('').length
+    if (weight >= REPO_MIN_TOKEN) partial.push({ tokens, weight, target })
+  }
+
+  partial.sort((a, b) => b.weight - a.weight || a.target.localeCompare(b.target))
+  return { exact, partial, size: exact.size }
+}
+
+function containsTokens(haystack: string[], needle: string[]): boolean {
+  if (needle.length === 0 || needle.length > haystack.length) return false
+  for (let start = 0; start + needle.length <= haystack.length; start++) {
+    let hit = true
+    for (let i = 0; i < needle.length; i++) {
+      if (haystack[start + i] !== needle[i]) {
+        hit = false
+        break
+      }
+    }
+    if (hit) return true
+  }
+  return false
+}
+
+function aliasFor(index: AliasIndex, fullRepo: string, repo: string): string | undefined {
+  if (index.size === 0) return undefined
+
+  const fullKey = normalize(fullRepo)
+  const shortKey = normalize(repo)
+  const direct = index.exact.get(shortKey) ?? index.exact.get(fullKey)
+  if (direct) return direct
+
+  const shortTokens = shortKey.split(' ')
+  const fullTokens = fullKey.split(' ')
+  for (const entry of index.partial) {
+    if (containsTokens(shortTokens, entry.tokens) || containsTokens(fullTokens, entry.tokens)) {
+      return entry.target
+    }
+  }
+  return undefined
+}
+
 export function suggestProjectForDay(
   commits: MatchCommit[] | undefined,
   matcher: Matcher,
+  aliasIndex: AliasIndex = EMPTY_ALIAS_INDEX,
 ): ProjectSuggestion | null {
   if (!commits || commits.length === 0 || matcher.size === 0) return null
 
@@ -210,13 +276,20 @@ export function suggestProjectForDay(
 
   for (const commit of commits) {
     const repo = shortRepo(commit.repo)
-    let match = matcher.best(repo, REPO_MIN_TOKEN)
+    const alias = aliasFor(aliasIndex, commit.repo, repo)
+    let match: ProjectMatch | null
     let weight = 1
-    if (!match || match.score < REPO_TRUST) {
-      const fromMessage = matcher.best(commit.message, MESSAGE_MIN_TOKEN)
-      if (fromMessage && (!match || fromMessage.score > match.score)) {
-        match = fromMessage
-        weight = MESSAGE_WEIGHT
+
+    if (alias) {
+      match = matcher.best(alias, REPO_MIN_TOKEN)
+    } else {
+      match = matcher.best(repo, REPO_MIN_TOKEN)
+      if (!match || match.score < REPO_TRUST) {
+        const fromMessage = matcher.best(commit.message, MESSAGE_MIN_TOKEN)
+        if (fromMessage && (!match || fromMessage.score > match.score)) {
+          match = fromMessage
+          weight = MESSAGE_WEIGHT
+        }
       }
     }
     if (!match) continue
@@ -261,18 +334,19 @@ export function suggestProjectForDay(
   }
 }
 
-/** Keyed by position, so the caller must pass the dates in row order. */
 export function suggestProjectsForDates(
   dates: string[],
   commitsByDay: Map<string, MatchCommit[]>,
   projects: MatchProject[],
+  aliases: MatchAlias[] = [],
 ): Map<number, ProjectSuggestion> {
   const suggestions = new Map<number, ProjectSuggestion>()
   if (projects.length === 0) return suggestions
 
   const matcher = createMatcher(projects)
+  const aliasIndex = buildAliasIndex(aliases)
   dates.forEach((date, index) => {
-    const suggestion = suggestProjectForDay(commitsByDay.get(date), matcher)
+    const suggestion = suggestProjectForDay(commitsByDay.get(date), matcher, aliasIndex)
     if (suggestion) suggestions.set(index, suggestion)
   })
   return suggestions

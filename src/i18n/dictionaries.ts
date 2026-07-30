@@ -50,6 +50,23 @@ const en = {
     openGitHub: 'Open GitHub',
     awaitingAuth: 'Waiting for authorization...',
   },
+  settings: {
+    button: 'Settings',
+    title: 'Settings',
+    save: 'Save',
+    cancel: 'Cancel',
+    aliasesSection: 'Project aliases',
+    preferencesSection: 'Preferences',
+    language: 'Language',
+    aliasHint:
+      'When a GitHub repository is named differently from the Clockify project, map it here. Whole words from the repository name are enough. Pick a project from the list for an exact match.',
+    repoLabel: 'GitHub repository',
+    targetLabel: 'Consider as',
+    repoPlaceholder: 'my-repo or org/my-repo',
+    targetPlaceholder: 'Clockify project name',
+    addAlias: 'Add alias',
+    remove: 'Remove',
+  },
   storage: {
     rememberKeys: 'Remember API keys',
     rememberHint:
@@ -183,6 +200,23 @@ const pt: Dictionary = {
     copyCode: 'Copiar código',
     openGitHub: 'Abrir GitHub',
     awaitingAuth: 'Aguardando autorização...',
+  },
+  settings: {
+    button: 'Configurações',
+    title: 'Configurações',
+    save: 'Salvar',
+    cancel: 'Cancelar',
+    aliasesSection: 'Aliases de projeto',
+    preferencesSection: 'Preferências',
+    language: 'Idioma',
+    aliasHint:
+      'Quando o repositório do GitHub tem nome diferente do projeto no Clockify, mapeie aqui. Palavras inteiras do nome do repositório já bastam. Escolha um projeto da lista para casar exato.',
+    repoLabel: 'Repositório no GitHub',
+    targetLabel: 'Considerar como',
+    repoPlaceholder: 'meu-repo ou org/meu-repo',
+    targetPlaceholder: 'Nome do projeto no Clockify',
+    addAlias: 'Adicionar alias',
+    remove: 'Remover',
   },
   storage: {
     rememberKeys: 'Lembrar API keys',

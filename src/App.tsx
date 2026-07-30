@@ -4,6 +4,7 @@ import { useReport } from './hooks/useReport'
 import { useClockify } from './hooks/useClockify'
 import { useGitHub } from './hooks/useGitHub'
 import { useAutoProjects } from './hooks/useAutoProjects'
+import { useAliases } from './hooks/useAliases'
 import { TopNav } from './components/TopNav'
 import { HeroBand } from './components/HeroBand'
 import { AiModelPanel } from './components/AiModelPanel'
@@ -11,7 +12,6 @@ import { ClockifyPanel } from './components/ClockifyPanel'
 import { GitHubPanel } from './components/GitHubPanel'
 import { SourceSection } from './components/SourceSection'
 import { BulkBar } from './components/BulkBar'
-import { KeyStorageSwitch } from './components/KeyStorageSwitch'
 import { TimeSheetTable } from './components/TimeSheetTable'
 import { InsertAllBand } from './components/InsertAllBand'
 import './App.css'
@@ -20,6 +20,7 @@ function App() {
   const report = useReport()
   const clockify = useClockify()
   const github = useGitHub()
+  const aliases = useAliases()
 
   const rows = report.rows
   const firstDate = rows?.[0]?.date
@@ -34,12 +35,13 @@ function App() {
     rows,
     commitsCache: github.commitsCache,
     projects: clockify.projects,
+    aliases: aliases.aliases,
     applyAutoProjects: clockify.applyAutoProjects,
   })
 
   return (
     <div className="page">
-      <TopNav />
+      <TopNav aliases={aliases} report={report} clockify={clockify} />
       <HeroBand />
 
       <main className="content-band">
@@ -49,8 +51,6 @@ function App() {
             <ClockifyPanel clockify={clockify} />
             <GitHubPanel github={github} />
           </div>
-
-          <KeyStorageSwitch report={report} clockify={clockify} />
 
           <BulkBar clockify={clockify} />
 

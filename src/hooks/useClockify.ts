@@ -93,10 +93,6 @@ export function useClockify() {
     })
   }
 
-  /**
-   * A manual pick beats the commit suggestion, which in turn beats the bulk project:
-   * the bulk one only fills the days the commits could not explain.
-   */
   function resolveProject(idx: number): string | undefined {
     return rowProject.get(idx) ?? autoProject.get(idx)?.projectId ?? selectedProject
   }
@@ -107,7 +103,6 @@ export function useClockify() {
     setAutoProject(new Map())
   }
 
-  /** Rows already sent keep the project they were sent with, so they are never re-suggested. */
   function applyAutoProjects(suggestions: Map<number, ProjectSuggestion>) {
     setAutoProject(prev => {
       const next = new Map<number, ProjectSuggestion>()

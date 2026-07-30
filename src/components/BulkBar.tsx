@@ -1,6 +1,8 @@
-import { Modal, Select } from 'antd'
+import { useState } from 'react'
+import { Select } from 'antd'
 import type { ClockifyVM } from '../hooks/useClockify'
 import { useI18n } from '../i18n/useI18n'
+import { StyledModal } from './StyledModal'
 
 interface BulkBarProps {
   clockify: ClockifyVM
@@ -8,6 +10,7 @@ interface BulkBarProps {
 
 export function BulkBar({ clockify }: BulkBarProps) {
   const { t } = useI18n()
+  const [pendingProject, setPendingProject] = useState<string | null>(null)
   const {
     workspaces, selectedWorkspace, handleWorkspaceChange,
     projects, selectedProject, setBulkProject, autoProject,
@@ -21,13 +24,12 @@ export function BulkBar({ clockify }: BulkBarProps) {
       setBulkProject(projectId)
       return
     }
-    Modal.confirm({
-      title: t.clockify.bulkOverwriteTitle,
-      content: t.clockify.bulkOverwriteContent(autoProject.size),
-      okText: t.clockify.bulkOverwriteOk,
-      cancelText: t.clockify.bulkOverwriteCancel,
-      onOk: () => setBulkProject(projectId),
-    })
+    setPendingProject(projectId)
+  }
+
+  function confirmOverwrite() {
+    if (pendingProject) setBulkProject(pendingProject)
+    setPendingProject(null)
   }
 
   return (
@@ -57,6 +59,20 @@ export function BulkBar({ clockify }: BulkBarProps) {
           />
         </div>
       </div>
+
+      {pendingProject && (
+        <StyledModal
+          title={t.clockify.bulkOverwriteTitle}
+          okText={t.clockify.bulkOverwriteOk}
+          cancelText={t.clockify.bulkOverwriteCancel}
+          onOk={confirmOverwrite}
+          onCancel={() => setPendingProject(null)}
+          okDanger
+          width={480}
+        >
+          <p className="modal-text">{t.clockify.bulkOverwriteContent(autoProject.size)}</p>
+        </StyledModal>
+      )}
     </section>
   )
 }
