@@ -21,7 +21,7 @@ export function AiModelPanel({ report }: AiModelPanelProps) {
   } = report
 
   return (
-    <Panel index="01" title={t.ai.title}>
+    <Panel index="01" title={t.ai.title} info={t.ai.info}>
       <div className="config-col">
         <Segmented
           block

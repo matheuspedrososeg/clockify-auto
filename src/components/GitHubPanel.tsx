@@ -20,7 +20,7 @@ export function GitHubPanel({ github }: GitHubPanelProps) {
   }[status]
 
   return (
-    <Panel index="03" title={t.github.title}>
+    <Panel index="03" title={t.github.title} info={t.github.info}>
       <div className="config-col">
         <div className="config-field">
           <label>{t.github.account}</label>

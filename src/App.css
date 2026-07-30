@@ -136,6 +136,25 @@
   margin: 0;
 }
 
+.panel-info {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--muted-soft);
+  cursor: help;
+  transition: color 0.15s ease;
+}
+
+.panel-info:hover,
+.panel-info:focus-visible {
+  color: var(--ink);
+}
+
 .config-col {
   display: flex;
   flex-direction: column;

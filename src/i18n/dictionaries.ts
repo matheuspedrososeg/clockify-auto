@@ -11,6 +11,7 @@ const en = {
   },
   ai: {
     title: 'AI model',
+    info: 'Optional. The AI model reads the timesheet images you upload (OCR) and turns them into the days and hours of the table. Skip it if you prefer to fill the table by hand.',
     geminiKey: 'Gemini API key',
     geminiPlaceholder: 'Enter your Google AI Studio API key',
     claudeKey: 'Claude API key',
@@ -36,6 +37,7 @@ const en = {
   },
   github: {
     title: 'GitHub',
+    info: 'Optional. Connecting GitHub shows the commits you made on each day and uses them to suggest the project of that day. Skip it if you prefer to pick the projects yourself.',
     account: 'Account',
     notAuthenticated: 'User not authenticated',
     avatarAlt: (username: string) => `Avatar of @${username}`,
@@ -162,6 +164,7 @@ const pt: Dictionary = {
   },
   ai: {
     title: 'Modelo de IA',
+    info: 'Opcional. O modelo de IA lê as imagens de ponto que você envia (OCR) e transforma em dias e horas na tabela. Pule se preferir preencher a tabela na mão.',
     geminiKey: 'Gemini API Key',
     geminiPlaceholder: 'Insira sua API key do Google AI Studio',
     claudeKey: 'Claude API Key',
@@ -187,6 +190,7 @@ const pt: Dictionary = {
   },
   github: {
     title: 'GitHub',
+    info: 'Opcional. Conectar o GitHub mostra os commits que você fez em cada dia e usa eles para sugerir o projeto daquele dia. Pule se preferir escolher os projetos manualmente.',
     account: 'Conta',
     notAuthenticated: 'Usuário não autenticado',
     avatarAlt: (username: string) => `Avatar de @${username}`,
