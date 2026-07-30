@@ -4,6 +4,7 @@ import type { TimeSheetRow } from '../types/timesheet'
 import { useI18n } from '../i18n/useI18n'
 import { formatDayMonth } from '../utils/dates'
 import { buildEntries, rowState } from '../utils/timesheet'
+import type { ProjectSuggestion } from '../utils/projectMatch'
 import { readKey, writeKey } from '../utils/keyStorage'
 
 export interface ClockifyWorkspace {
@@ -69,6 +70,7 @@ export function useClockify() {
   const [insertingAll, setInsertingAll] = useState(false)
   const [rowStatus, setRowStatus] = useState<Map<number, RowStatus>>(new Map())
   const [rowProject, setRowProject] = useState<Map<number, string>>(new Map())
+  const [autoProject, setAutoProject] = useState<Map<number, ProjectSuggestion>>(new Map())
 
   const clockifyConnected = !!(apiKey && selectedWorkspace && projects.length > 0)
 
@@ -83,22 +85,55 @@ export function useClockify() {
 
   function setRowProjectOverride(idx: number, projectId: string) {
     setRowProject(prev => new Map(prev).set(idx, projectId))
+    setAutoProject(prev => {
+      if (!prev.has(idx)) return prev
+      const next = new Map(prev)
+      next.delete(idx)
+      return next
+    })
   }
 
-  /** Undefined until either a bulk project or a per-row override is picked. */
+  /**
+   * A manual pick beats the commit suggestion, which in turn beats the bulk project:
+   * the bulk one only fills the days the commits could not explain.
+   */
   function resolveProject(idx: number): string | undefined {
-    return rowProject.get(idx) ?? selectedProject
+    return rowProject.get(idx) ?? autoProject.get(idx)?.projectId ?? selectedProject
   }
 
-  /** Per-row overrides are dropped so a bulk pick actually reaches every row. */
   function setBulkProject(projectId: string) {
     setSelectedProject(projectId)
     setRowProject(new Map())
+    setAutoProject(new Map())
+  }
+
+  /** Rows already sent keep the project they were sent with, so they are never re-suggested. */
+  function applyAutoProjects(suggestions: Map<number, ProjectSuggestion>) {
+    setAutoProject(prev => {
+      const next = new Map<number, ProjectSuggestion>()
+      for (const [idx, suggestion] of suggestions) {
+        const locked = rowProject.has(idx) || rowStatus.get(idx) === 'done'
+        const kept = locked ? prev.get(idx) : suggestion
+        if (kept) next.set(idx, kept)
+      }
+      if (next.size === prev.size) {
+        let same = true
+        for (const [idx, suggestion] of next) {
+          if (prev.get(idx)?.projectId !== suggestion.projectId) {
+            same = false
+            break
+          }
+        }
+        if (same) return prev
+      }
+      return next
+    })
   }
 
   function resetInsertionState() {
     setRowStatus(new Map())
     setRowProject(new Map())
+    setAutoProject(new Map())
   }
 
   /** Editing one row must not wipe the other rows' inserted badges. */
@@ -241,8 +276,10 @@ export function useClockify() {
     insertingAll,
     rowStatus,
     rowProject,
+    autoProject,
     clockifyConnected,
     resolveProject,
+    applyAutoProjects,
     handleConnect,
     disconnect,
     handleWorkspaceChange,

@@ -28,6 +28,11 @@ const en = {
     projectPlaceholder: 'Select a project',
     hintIdle: 'Connect to pick where the entries go',
     hintConnected: 'Pick the workspace and project below',
+    bulkOverwriteTitle: 'Overwrite the suggested projects?',
+    bulkOverwriteContent: (n: number) =>
+      `${n} day${n === 1 ? '' : 's'} ${n === 1 ? 'was' : 'were'} filled in from the commits. This project will replace all of them.`,
+    bulkOverwriteOk: 'Overwrite',
+    bulkOverwriteCancel: 'Keep the suggestions',
   },
   github: {
     title: 'GitHub',
@@ -80,6 +85,9 @@ const en = {
     rowEmptyHint: 'Fill in at least one complete pair of times',
     rowInvalidHint: 'Check the times of this day',
     rowNoProjectHint: 'Pick a project for this day',
+    autoProjectTag: 'auto',
+    autoProjectHint: (commits: number, total: number, repo: string) =>
+      `${commits} of ${total} commit${total === 1 ? '' : 's'} of this day are in ${repo}`,
     recordsFound: (filled: number, total: number) =>
       `${filled} of ${total} day${total === 1 ? '' : 's'} ready`,
   },
@@ -154,6 +162,11 @@ const pt: Dictionary = {
     projectPlaceholder: 'Selecione o projeto',
     hintIdle: 'Conecte para escolher onde os lançamentos vão',
     hintConnected: 'Escolha o workspace e o projeto abaixo',
+    bulkOverwriteTitle: 'Sobrescrever os projetos sugeridos?',
+    bulkOverwriteContent: (n: number) =>
+      `${n} dia${n === 1 ? '' : 's'} ${n === 1 ? 'foi preenchido' : 'foram preenchidos'} pelos commits. Este projeto vai substituir todos.`,
+    bulkOverwriteOk: 'Sobrescrever',
+    bulkOverwriteCancel: 'Manter as sugestões',
   },
   github: {
     title: 'GitHub',
@@ -206,6 +219,9 @@ const pt: Dictionary = {
     rowEmptyHint: 'Preencha ao menos um par completo de horários',
     rowInvalidHint: 'Confira os horários deste dia',
     rowNoProjectHint: 'Escolha um projeto para este dia',
+    autoProjectTag: 'auto',
+    autoProjectHint: (commits: number, total: number, repo: string) =>
+      `${commits} de ${total} commit${total === 1 ? '' : 's'} deste dia ${commits === 1 ? 'está' : 'estão'} em ${repo}`,
     recordsFound: (filled: number, total: number) =>
       `${filled} de ${total} dia${total === 1 ? '' : 's'} ${total === 1 ? 'pronto' : 'prontos'}`,
   },

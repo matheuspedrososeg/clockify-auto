@@ -1,4 +1,4 @@
-import { Button, Select, Table, Tooltip } from 'antd'
+import { Button, Select, Table, Tag, Tooltip } from 'antd'
 import { CheckOutlined } from '@ant-design/icons'
 import type { TableColumnsType } from 'antd'
 import type { TimeField, TimeSheetRow } from '../types/timesheet'
@@ -48,7 +48,7 @@ function buildBaseColumns(t: Dictionary, onTimeChange: TimeChangeHandler): Colum
 
 function buildClockifyColumns(clockify: ClockifyVM, t: Dictionary): Columns {
   const {
-    projects, rowStatus, insertingAll,
+    projects, rowStatus, rowProject, autoProject, insertingAll,
     resolveProject, setRowProjectOverride, handleInsertRow,
   } = clockify
 
@@ -57,18 +57,36 @@ function buildClockifyColumns(clockify: ClockifyVM, t: Dictionary): Columns {
       title: t.table.project,
       key: 'project',
       align: 'center',
-      width: 180,
-      render: (_, record) => (
-        <Select
-          size="small"
-          style={{ width: '100%' }}
-          placeholder={t.clockify.projectPlaceholder}
-          value={resolveProject(record.key)}
-          onChange={val => setRowProjectOverride(record.key, val)}
-          options={projects.map(p => ({ value: p.id, label: p.name }))}
-          disabled={rowStatus.get(record.key) === 'done' || insertingAll}
-        />
-      ),
+      width: 220,
+      render: (_, record) => {
+        const suggestion = rowProject.has(record.key) ? undefined : autoProject.get(record.key)
+        const select = (
+          <Select
+            size="small"
+            style={{ width: '100%' }}
+            placeholder={t.clockify.projectPlaceholder}
+            value={resolveProject(record.key)}
+            onChange={val => setRowProjectOverride(record.key, val)}
+            options={projects.map(p => ({ value: p.id, label: p.name }))}
+            disabled={rowStatus.get(record.key) === 'done' || insertingAll}
+          />
+        )
+        if (!suggestion) return select
+        return (
+          <Tooltip
+            title={t.table.autoProjectHint(
+              suggestion.commits,
+              suggestion.total,
+              suggestion.topRepo,
+            )}
+          >
+            <div className="project-cell">
+              {select}
+              <Tag className="project-auto-tag">{t.table.autoProjectTag}</Tag>
+            </div>
+          </Tooltip>
+        )
+      },
     },
     {
       title: '',

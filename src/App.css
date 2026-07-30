@@ -432,6 +432,21 @@
   flex-wrap: wrap;
 }
 
+.project-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xxs);
+}
+
+.project-auto-tag {
+  flex-shrink: 0;
+  margin-inline-end: 0;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted-soft);
+}
+
 /* --- commit list inside expandable rows --- */
 .commit-list {
   list-style: none;

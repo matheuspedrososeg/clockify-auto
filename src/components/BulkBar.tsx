@@ -1,4 +1,4 @@
-import { Select } from 'antd'
+import { Modal, Select } from 'antd'
 import type { ClockifyVM } from '../hooks/useClockify'
 import { useI18n } from '../i18n/useI18n'
 
@@ -10,11 +10,25 @@ export function BulkBar({ clockify }: BulkBarProps) {
   const { t } = useI18n()
   const {
     workspaces, selectedWorkspace, handleWorkspaceChange,
-    projects, selectedProject, setBulkProject,
+    projects, selectedProject, setBulkProject, autoProject,
     loadingProjects, insertingAll,
   } = clockify
 
   if (workspaces.length === 0) return null
+
+  function handleProjectPick(projectId: string) {
+    if (autoProject.size === 0) {
+      setBulkProject(projectId)
+      return
+    }
+    Modal.confirm({
+      title: t.clockify.bulkOverwriteTitle,
+      content: t.clockify.bulkOverwriteContent(autoProject.size),
+      okText: t.clockify.bulkOverwriteOk,
+      cancelText: t.clockify.bulkOverwriteCancel,
+      onOk: () => setBulkProject(projectId),
+    })
+  }
 
   return (
     <section className="section-block bulk-bar">
@@ -36,7 +50,7 @@ export function BulkBar({ clockify }: BulkBarProps) {
             style={{ width: '100%' }}
             placeholder={t.clockify.projectPlaceholder}
             value={selectedProject}
-            onChange={setBulkProject}
+            onChange={handleProjectPick}
             loading={loadingProjects}
             disabled={!selectedWorkspace || insertingAll}
             options={projects.map(p => ({ value: p.id, label: p.name }))}

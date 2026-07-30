@@ -3,6 +3,7 @@ import { Spin } from 'antd'
 import { useReport } from './hooks/useReport'
 import { useClockify } from './hooks/useClockify'
 import { useGitHub } from './hooks/useGitHub'
+import { useAutoProjects } from './hooks/useAutoProjects'
 import { TopNav } from './components/TopNav'
 import { HeroBand } from './components/HeroBand'
 import { AiModelPanel } from './components/AiModelPanel'
@@ -28,6 +29,13 @@ function App() {
     if (github.status !== 'authenticated' || !firstDate || !lastDate) return
     github.loadCommitsForRange(firstDate, lastDate)
   }, [github, firstDate, lastDate])
+
+  useAutoProjects({
+    rows,
+    commitsCache: github.commitsCache,
+    projects: clockify.projects,
+    applyAutoProjects: clockify.applyAutoProjects,
+  })
 
   return (
     <div className="page">
