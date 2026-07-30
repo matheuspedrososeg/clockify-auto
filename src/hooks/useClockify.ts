@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { message } from 'antd'
 import type { TimeSheetRow } from '../types/timesheet'
 import { useI18n } from '../i18n/useI18n'
@@ -184,6 +184,15 @@ export function useClockify() {
       setLoadingWorkspaces(false)
     }
   }
+
+  const bootConnectRef = useRef(handleConnect)
+  const bootedRef = useRef(false)
+
+  useEffect(() => {
+    if (bootedRef.current) return
+    bootedRef.current = true
+    bootConnectRef.current()
+  }, [])
 
   async function handleInsertRow(idx: number, row: TimeSheetRow) {
     const projectId = resolveProject(idx)

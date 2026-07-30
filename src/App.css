@@ -83,15 +83,17 @@
 }
 
 .panel-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
+  gap: var(--space-lg);
 }
 
 /* --- panel (model-card dialect) --- */
 .panel {
   display: flex;
+  flex: 1 1 320px;
+  min-width: 0;
   flex-direction: column;
   background: var(--canvas);
   border: 1px solid var(--hairline);
@@ -138,6 +140,12 @@
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  min-width: 0;
+}
+
+.panel .ant-segmented-item,
+.panel .ant-segmented-item-label {
+  min-width: 0;
 }
 
 .config-field {
@@ -634,14 +642,12 @@
   font-weight: 300;
 }
 
-/* Switch hardcodes borderRadius: 100, so the global borderRadius: 0 misses it */
 .ant-switch,
 .ant-switch .ant-switch-inner,
 .ant-switch .ant-switch-handle::before {
   border-radius: 0;
 }
 
-/* boxShadowSecondary is 'none' in the theme, so the picker popup needs an edge of its own */
 .ant-picker-dropdown .ant-picker-panel-container {
   border: 1px solid var(--hairline-strong);
   box-shadow: none;
@@ -664,12 +670,6 @@
 }
 
 /* --- responsive --- */
-@media (max-width: 1024px) {
-  .panel-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 768px) {
   .band-inner {
     padding: 0 var(--space-md);
@@ -708,8 +708,8 @@
     font-size: 24px;
   }
 
-  .panel-grid {
-    grid-template-columns: 1fr;
+  .panel {
+    flex-basis: 100%;
   }
 
   .section-head-row {
@@ -718,14 +718,21 @@
     gap: var(--space-sm);
   }
 
-  /* RangePicker renders two month panels with flex-wrap: nowrap, which
-     overflows a phone viewport — constrain the popup so they stack. */
   .ant-picker-dropdown {
-    max-width: calc(100vw - 2 * var(--space-md));
+    max-width: calc(100vw - 2 * var(--space-md) - 2 * var(--space-lg));
   }
 
+  .ant-picker-dropdown .ant-picker-panel-layout,
+  .ant-picker-dropdown .ant-picker-panel-layout > div,
   .ant-picker-dropdown .ant-picker-panels {
+    display: flex;
     flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  .ant-picker-dropdown .ant-picker-panel,
+  .ant-picker-dropdown .ant-picker-date-panel {
+    max-width: 100%;
   }
 
   .ant-picker-dropdown .ant-picker-panel-container {
