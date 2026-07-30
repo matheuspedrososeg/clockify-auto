@@ -76,7 +76,7 @@ async function fileToBase64(file: File): Promise<string> {
 async function transcribeWithGemini(apiKey: string, imageInBase64: string, mimeType: string): Promise<OcrRow[]> {
     const ai = new GoogleGenAI({ apiKey })
     const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+        model: "gemini-3.5-flash-lite",
         contents: [{
             parts: [
                 { inlineData: { mimeType, data: imageInBase64 } },
