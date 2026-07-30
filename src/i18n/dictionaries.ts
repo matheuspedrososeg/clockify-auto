@@ -11,6 +11,7 @@ const en = {
   },
   ai: {
     title: 'AI model',
+    info: 'Optional. The AI model reads the timesheet images you upload (OCR) and turns them into the days and hours of the table. Skip it if you prefer to fill the table by hand.',
     geminiKey: 'Gemini API key',
     geminiPlaceholder: 'Enter your Google AI Studio API key',
     claudeKey: 'Claude API key',
@@ -28,9 +29,15 @@ const en = {
     projectPlaceholder: 'Select a project',
     hintIdle: 'Connect to pick where the entries go',
     hintConnected: 'Pick the workspace and project below',
+    bulkOverwriteTitle: 'Overwrite the suggested projects?',
+    bulkOverwriteContent: (n: number) =>
+      `${n} day${n === 1 ? '' : 's'} ${n === 1 ? 'was' : 'were'} filled in from the commits. This project will replace all of them.`,
+    bulkOverwriteOk: 'Overwrite',
+    bulkOverwriteCancel: 'Keep the suggestions',
   },
   github: {
     title: 'GitHub',
+    info: 'Optional. Connecting GitHub shows the commits you made on each day and uses them to suggest the project of that day. Skip it if you prefer to pick the projects yourself.',
     account: 'Account',
     notAuthenticated: 'User not authenticated',
     avatarAlt: (username: string) => `Avatar of @${username}`,
@@ -44,6 +51,23 @@ const en = {
     copyCode: 'Copy code',
     openGitHub: 'Open GitHub',
     awaitingAuth: 'Waiting for authorization...',
+  },
+  settings: {
+    button: 'Settings',
+    title: 'Settings',
+    save: 'Save',
+    cancel: 'Cancel',
+    aliasesSection: 'Project aliases',
+    preferencesSection: 'Preferences',
+    language: 'Language',
+    aliasHint:
+      'When a GitHub repository is named differently from the Clockify project, map it here. Whole words from the repository name are enough. Pick a project from the list for an exact match.',
+    repoLabel: 'GitHub repository',
+    targetLabel: 'Consider as',
+    repoPlaceholder: 'my-repo or org/my-repo',
+    targetPlaceholder: 'Clockify project name',
+    addAlias: 'Add alias',
+    remove: 'Remove',
   },
   storage: {
     rememberKeys: 'Remember API keys',
@@ -80,6 +104,9 @@ const en = {
     rowEmptyHint: 'Fill in at least one complete pair of times',
     rowInvalidHint: 'Check the times of this day',
     rowNoProjectHint: 'Pick a project for this day',
+    autoProjectTag: 'auto',
+    autoProjectHint: (commits: number, total: number, repo: string) =>
+      `${commits} of ${total} commit${total === 1 ? '' : 's'} of this day are in ${repo}`,
     recordsFound: (filled: number, total: number) =>
       `${filled} of ${total} day${total === 1 ? '' : 's'} ready`,
   },
@@ -137,6 +164,7 @@ const pt: Dictionary = {
   },
   ai: {
     title: 'Modelo de IA',
+    info: 'Opcional. O modelo de IA lê as imagens de ponto que você envia (OCR) e transforma em dias e horas na tabela. Pule se preferir preencher a tabela na mão.',
     geminiKey: 'Gemini API Key',
     geminiPlaceholder: 'Insira sua API key do Google AI Studio',
     claudeKey: 'Claude API Key',
@@ -154,9 +182,15 @@ const pt: Dictionary = {
     projectPlaceholder: 'Selecione o projeto',
     hintIdle: 'Conecte para escolher onde os lançamentos vão',
     hintConnected: 'Escolha o workspace e o projeto abaixo',
+    bulkOverwriteTitle: 'Sobrescrever os projetos sugeridos?',
+    bulkOverwriteContent: (n: number) =>
+      `${n} dia${n === 1 ? '' : 's'} ${n === 1 ? 'foi preenchido' : 'foram preenchidos'} pelos commits. Este projeto vai substituir todos.`,
+    bulkOverwriteOk: 'Sobrescrever',
+    bulkOverwriteCancel: 'Manter as sugestões',
   },
   github: {
     title: 'GitHub',
+    info: 'Opcional. Conectar o GitHub mostra os commits que você fez em cada dia e usa eles para sugerir o projeto daquele dia. Pule se preferir escolher os projetos manualmente.',
     account: 'Conta',
     notAuthenticated: 'Usuário não autenticado',
     avatarAlt: (username: string) => `Avatar de @${username}`,
@@ -170,6 +204,23 @@ const pt: Dictionary = {
     copyCode: 'Copiar código',
     openGitHub: 'Abrir GitHub',
     awaitingAuth: 'Aguardando autorização...',
+  },
+  settings: {
+    button: 'Configurações',
+    title: 'Configurações',
+    save: 'Salvar',
+    cancel: 'Cancelar',
+    aliasesSection: 'Aliases de projeto',
+    preferencesSection: 'Preferências',
+    language: 'Idioma',
+    aliasHint:
+      'Quando o repositório do GitHub tem nome diferente do projeto no Clockify, mapeie aqui. Palavras inteiras do nome do repositório já bastam. Escolha um projeto da lista para casar exato.',
+    repoLabel: 'Repositório no GitHub',
+    targetLabel: 'Considerar como',
+    repoPlaceholder: 'meu-repo ou org/meu-repo',
+    targetPlaceholder: 'Nome do projeto no Clockify',
+    addAlias: 'Adicionar alias',
+    remove: 'Remover',
   },
   storage: {
     rememberKeys: 'Lembrar API keys',
@@ -206,6 +257,9 @@ const pt: Dictionary = {
     rowEmptyHint: 'Preencha ao menos um par completo de horários',
     rowInvalidHint: 'Confira os horários deste dia',
     rowNoProjectHint: 'Escolha um projeto para este dia',
+    autoProjectTag: 'auto',
+    autoProjectHint: (commits: number, total: number, repo: string) =>
+      `${commits} de ${total} commit${total === 1 ? '' : 's'} deste dia ${commits === 1 ? 'está' : 'estão'} em ${repo}`,
     recordsFound: (filled: number, total: number) =>
       `${filled} de ${total} dia${total === 1 ? '' : 's'} ${total === 1 ? 'pronto' : 'prontos'}`,
   },

@@ -35,19 +35,6 @@
   color: var(--ink);
 }
 
-.top-nav-lang {
-  display: flex;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.top-nav-lang-label {
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: 0.3px;
-  color: var(--muted);
-}
-
 /* --- hero-band-dark --- */
 .hero-band {
   background: var(--canvas);
@@ -96,15 +83,17 @@
 }
 
 .panel-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-lg);
+  display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
+  gap: var(--space-lg);
 }
 
 /* --- panel (model-card dialect) --- */
 .panel {
   display: flex;
+  flex: 1 1 320px;
+  min-width: 0;
   flex-direction: column;
   background: var(--canvas);
   border: 1px solid var(--hairline);
@@ -147,10 +136,35 @@
   margin: 0;
 }
 
+.panel-info {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 13px;
+  line-height: 1;
+  color: var(--muted-soft);
+  cursor: help;
+  transition: color 0.15s ease;
+}
+
+.panel-info:hover,
+.panel-info:focus-visible {
+  color: var(--ink);
+}
+
 .config-col {
   display: flex;
   flex-direction: column;
   gap: var(--space-md);
+  min-width: 0;
+}
+
+.panel .ant-segmented-item,
+.panel .ant-segmented-item-label {
+  min-width: 0;
 }
 
 .config-field {
@@ -432,6 +446,113 @@
   flex-wrap: wrap;
 }
 
+.styled-modal .ant-modal-content {
+  border: 1px solid var(--hairline);
+  padding: var(--space-lg) var(--space-xl) var(--space-xl);
+}
+
+.styled-modal .ant-modal-header {
+  margin-bottom: var(--space-lg);
+  padding-bottom: var(--space-md);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.styled-modal-title {
+  font-size: 13px;
+}
+
+.styled-modal .ant-modal-footer {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-md);
+  border-top: 1px solid var(--hairline);
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-xs);
+}
+
+.styled-modal .ant-modal-footer .ant-btn + .ant-btn {
+  margin-inline-start: 0;
+}
+
+.modal-text {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 300;
+  line-height: 1.5;
+  color: var(--body);
+}
+
+.modal-section + .modal-section {
+  margin-top: var(--space-xl);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--hairline);
+}
+
+.styled-modal .ant-modal-body {
+  max-height: 62vh;
+  overflow: hidden auto;
+}
+
+.modal-section > .panel-title {
+  margin: 0 0 var(--space-md);
+}
+
+.modal-section > .panel-hint {
+  margin: 0 0 var(--space-md);
+}
+
+.modal-section .key-storage {
+  margin-top: var(--space-lg);
+}
+
+.alias-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  margin-bottom: var(--space-md);
+}
+
+.alias-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 48px;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.alias-row .ant-input {
+  height: 48px;
+  padding-block: 0;
+}
+
+.alias-remove {
+  width: 48px;
+  height: 48px;
+  padding: 0;
+}
+
+.alias-row-head span {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--muted-soft);
+}
+
+.project-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xxs);
+}
+
+.project-auto-tag {
+  flex-shrink: 0;
+  margin-inline-end: 0;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--muted-soft);
+}
+
 /* --- commit list inside expandable rows --- */
 .commit-list {
   list-style: none;
@@ -540,14 +661,12 @@
   font-weight: 300;
 }
 
-/* Switch hardcodes borderRadius: 100, so the global borderRadius: 0 misses it */
 .ant-switch,
 .ant-switch .ant-switch-inner,
 .ant-switch .ant-switch-handle::before {
   border-radius: 0;
 }
 
-/* boxShadowSecondary is 'none' in the theme, so the picker popup needs an edge of its own */
 .ant-picker-dropdown .ant-picker-panel-container {
   border: 1px solid var(--hairline-strong);
   box-shadow: none;
@@ -570,12 +689,6 @@
 }
 
 /* --- responsive --- */
-@media (max-width: 1024px) {
-  .panel-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
 @media (max-width: 768px) {
   .band-inner {
     padding: 0 var(--space-md);
@@ -614,8 +727,8 @@
     font-size: 24px;
   }
 
-  .panel-grid {
-    grid-template-columns: 1fr;
+  .panel {
+    flex-basis: 100%;
   }
 
   .section-head-row {
@@ -624,14 +737,21 @@
     gap: var(--space-sm);
   }
 
-  /* RangePicker renders two month panels with flex-wrap: nowrap, which
-     overflows a phone viewport — constrain the popup so they stack. */
   .ant-picker-dropdown {
-    max-width: calc(100vw - 2 * var(--space-md));
+    max-width: calc(100vw - 2 * var(--space-md) - 2 * var(--space-lg));
   }
 
+  .ant-picker-dropdown .ant-picker-panel-layout,
+  .ant-picker-dropdown .ant-picker-panel-layout > div,
   .ant-picker-dropdown .ant-picker-panels {
+    display: flex;
     flex-wrap: wrap;
+    max-width: 100%;
+  }
+
+  .ant-picker-dropdown .ant-picker-panel,
+  .ant-picker-dropdown .ant-picker-date-panel {
+    max-width: 100%;
   }
 
   .ant-picker-dropdown .ant-picker-panel-container {

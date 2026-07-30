@@ -9,7 +9,7 @@ import { MAX_RANGE_DAYS, daysInclusive, enumerateDays } from '../utils/dates'
 import { normalizeOcrRows } from '../utils/timesheet'
 import { readKey, writeKey } from '../utils/keyStorage'
 
-export type AIModel = 'gemini-2.5-flash' | 'claude-sonnet-4-6'
+export type AIModel = 'gemini-3.5-flash' | 'claude-sonnet-4-6'
 
 const COLUMN_NAMES = {
     date: "Data",
@@ -76,7 +76,7 @@ async function fileToBase64(file: File): Promise<string> {
 async function transcribeWithGemini(apiKey: string, imageInBase64: string, mimeType: string): Promise<OcrRow[]> {
     const ai = new GoogleGenAI({ apiKey })
     const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: "gemini-3.5-flash",
         contents: [{
             parts: [
                 { inlineData: { mimeType, data: imageInBase64 } },
@@ -116,7 +116,7 @@ export function useReport() {
     const [sourceMode, setSourceModeState] = useState<SourceMode>('image')
     const [rows, setRows] = useState<TimeSheetRow[] | null>(null)
     const [loading, setLoading] = useState(false)
-    const [selectedModel, setSelectedModel] = useState<AIModel>('gemini-2.5-flash')
+    const [selectedModel, setSelectedModel] = useState<AIModel>('gemini-3.5-flash')
     const [geminiApiKey, setGeminiKeyState] = useState(
         () => readKey('gemini_api_key') || ''
     )

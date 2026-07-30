@@ -12,7 +12,7 @@ export function AntdProvider({ children }: { children: ReactNode }) {
   const { lang } = useI18n()
 
   return (
-    <ConfigProvider theme={antdTheme} locale={ANTD_LOCALES[lang]}>
+    <ConfigProvider theme={antdTheme} locale={ANTD_LOCALES[lang]} wave={{disabled:  true}}>
       {children}
     </ConfigProvider>
   )

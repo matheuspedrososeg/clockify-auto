@@ -4,7 +4,7 @@ import { useI18n } from '../i18n/useI18n'
 import { Panel } from './Panel'
 
 const MODEL_OPTIONS = [
-  { label: 'Gemini 2.5 Flash', value: 'gemini-2.5-flash' },
+  { label: 'Gemini 3.5 Flash', value: 'gemini-3.5-flash' },
   { label: 'Claude Sonnet 4.6', value: 'claude-sonnet-4-6' },
 ]
 
@@ -21,7 +21,7 @@ export function AiModelPanel({ report }: AiModelPanelProps) {
   } = report
 
   return (
-    <Panel index="01" title={t.ai.title}>
+    <Panel index="01" title={t.ai.title} info={t.ai.info}>
       <div className="config-col">
         <Segmented
           block
@@ -29,7 +29,7 @@ export function AiModelPanel({ report }: AiModelPanelProps) {
           value={selectedModel}
           onChange={v => setSelectedModel(v as AIModel)}
         />
-        {selectedModel === 'gemini-2.5-flash' && (
+        {selectedModel === 'gemini-3.5-flash' && (
           <div className="config-field">
             <label>{t.ai.geminiKey}</label>
             <Input.Password
