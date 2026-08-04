@@ -77,12 +77,47 @@ export function normalizeTime(raw: string): string | null {
   return `${pad(hour)}:${pad(minute)}`
 }
 
+export function timeToMinutes(hhmm: string): number {
+  const [hour, minute] = hhmm.split(':').map(Number)
+  return hour * 60 + minute
+}
+
+export function minutesBetween(from: string, to: string): number {
+  return timeToMinutes(to) - timeToMinutes(from)
+}
+
+export function formatDuration(minutes: number): string {
+  const total = Math.max(0, Math.round(minutes))
+  const hours = Math.floor(total / 60)
+  const rest = total % 60
+  return hours === 0 ? `${rest}min` : `${hours}h${pad(rest)}`
+}
+
+export function formatClock(instant: string): string {
+  const d = new Date(instant)
+  return `${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
+export function weekDay(iso: IsoDate): number {
+  return fromIsoDate(iso).getDay()
+}
+
 export function toUtcInstant(iso: IsoDate, hhmm: string): string {
   if (!isValidIsoDate(iso)) throw new RangeError(`invalid date: ${iso}`)
   if (!isValidTime(hhmm)) throw new RangeError(`invalid time: ${hhmm}`)
   const [y, m, d] = iso.split('-').map(Number)
   const [hour, minute] = hhmm.split(':').map(Number)
   return new Date(y, m - 1, d, hour, minute, 0, 0).toISOString()
+}
+
+/**
+ * Local midnight as a UTC instant, so range queries match how entries are posted.
+ * Clockify's range filters reject the millisecond part that toISOString emits.
+ */
+export function toUtcDayStart(iso: IsoDate): string {
+  if (!isValidIsoDate(iso)) throw new RangeError(`invalid date: ${iso}`)
+  const [y, m, d] = iso.split('-').map(Number)
+  return new Date(y, m - 1, d, 0, 0, 0, 0).toISOString().replace(/\.\d{3}Z$/, 'Z')
 }
 
 /**

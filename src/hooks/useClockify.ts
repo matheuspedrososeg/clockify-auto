@@ -2,65 +2,28 @@ import { useEffect, useRef, useState } from 'react'
 import { message } from 'antd'
 import type { TimeSheetRow } from '../types/timesheet'
 import { useI18n } from '../i18n/useI18n'
+import type { IsoDate } from '../utils/dates'
 import { formatDayMonth } from '../utils/dates'
-import { buildEntries, rowState } from '../utils/timesheet'
+import { rowState } from '../utils/timesheet'
 import type { ProjectSuggestion } from '../utils/projectMatch'
 import { readKey, writeKey } from '../utils/keyStorage'
+import type { ClockifyProject, ClockifyWorkspace } from '../utils/clockifyApi'
+import {
+  fetchCurrentUser,
+  fetchProjects,
+  fetchWorkspaces,
+  postTimeEntry,
+} from '../utils/clockifyApi'
+import { useClockifyEntries } from './useClockifyEntries'
 
-export interface ClockifyWorkspace {
-  id: string
-  name: string
-}
-
-export interface ClockifyProject {
-  id: string
-  name: string
-}
+export type { ClockifyProject, ClockifyWorkspace } from '../utils/clockifyApi'
 
 export type RowStatus = 'loading' | 'done' | 'error'
-
-const BASE_URL = 'https://api.clockify.me/api/v1'
-
-async function fetchWorkspaces(apiKey: string): Promise<ClockifyWorkspace[]> {
-  const res = await fetch(`${BASE_URL}/workspaces`, {
-    headers: { 'X-Api-Key': apiKey },
-  })
-  if (!res.ok) throw new Error('invalid clockify api key')
-  return res.json()
-}
-
-async function fetchProjects(apiKey: string, workspaceId: string): Promise<ClockifyProject[]> {
-  const res = await fetch(`${BASE_URL}/workspaces/${workspaceId}/projects?page-size=500`, {
-    headers: { 'X-Api-Key': apiKey },
-  })
-  if (!res.ok) throw new Error('failed to load projects')
-  return res.json()
-}
-
-async function postTimeEntry(
-  apiKey: string,
-  workspaceId: string,
-  projectId: string,
-  row: TimeSheetRow,
-): Promise<void> {
-  if (rowState(row) !== 'ready') throw new Error(`row not ready: ${row.date}`)
-
-  await Promise.all(
-    buildEntries(row).map((entry) =>
-      fetch(`${BASE_URL}/workspaces/${workspaceId}/time-entries`, {
-        method: 'POST',
-        headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...entry, projectId, billable: false }),
-      }).then((res) => {
-        if (!res.ok) throw new Error(`failed to insert entry of ${row.date}`)
-      }),
-    ),
-  )
-}
 
 export function useClockify() {
   const { t } = useI18n()
   const [apiKey, setApiKeyState] = useState(() => readKey('clockify_api_key'))
+  const [userId, setUserId] = useState<string | undefined>()
   const [workspaces, setWorkspaces] = useState<ClockifyWorkspace[]>([])
   const [selectedWorkspace, setSelectedWorkspace] = useState<string | undefined>()
   const [projects, setProjects] = useState<ClockifyProject[]>([])
@@ -71,6 +34,8 @@ export function useClockify() {
   const [rowStatus, setRowStatus] = useState<Map<number, RowStatus>>(new Map())
   const [rowProject, setRowProject] = useState<Map<number, string>>(new Map())
   const [autoProject, setAutoProject] = useState<Map<number, ProjectSuggestion>>(new Map())
+
+  const entries = useClockifyEntries({ apiKey, workspaceId: selectedWorkspace, userId })
 
   const clockifyConnected = !!(apiKey && selectedWorkspace && projects.length > 0)
 
@@ -145,6 +110,7 @@ export function useClockify() {
     setSelectedWorkspace(wsId)
     setSelectedProject(undefined)
     setProjects([])
+    entries.reset()
     setLoadingProjects(true)
     try {
       const ps = await fetchProjects(apiKey, wsId)
@@ -158,10 +124,12 @@ export function useClockify() {
 
   function disconnect() {
     setApiKey('')
+    setUserId(undefined)
     setWorkspaces([])
     setSelectedWorkspace(undefined)
     setProjects([])
     setSelectedProject(undefined)
+    entries.reset()
     resetInsertionState()
   }
 
@@ -172,8 +140,14 @@ export function useClockify() {
     setSelectedWorkspace(undefined)
     setProjects([])
     setSelectedProject(undefined)
+    setUserId(undefined)
+    entries.reset()
     try {
-      const ws = await fetchWorkspaces(apiKey.trim())
+      const [ws, user] = await Promise.all([
+        fetchWorkspaces(apiKey.trim()),
+        fetchCurrentUser(apiKey.trim()),
+      ])
+      setUserId(user.id)
       setWorkspaces(ws)
       if (ws.length === 1) {
         await handleWorkspaceChange(ws[0].id)
@@ -194,7 +168,7 @@ export function useClockify() {
     bootConnectRef.current()
   }, [])
 
-  async function handleInsertRow(idx: number, row: TimeSheetRow) {
+  async function handleInsertRow(idx: number, row: TimeSheetRow, replace = false) {
     const projectId = resolveProject(idx)
     if (!projectId) {
       message.error(t.messages.missingProject)
@@ -214,6 +188,7 @@ export function useClockify() {
 
     setRowSt(idx, 'loading')
     try {
+      if (replace) await entries.deleteDay(row.date)
       await postTimeEntry(apiKey, selectedWorkspace!, projectId, row)
       setRowSt(idx, 'done')
       message.success(t.messages.dayInserted(formatDayMonth(row.date)))
@@ -221,13 +196,14 @@ export function useClockify() {
       setRowSt(idx, 'error')
       message.error(t.messages.dayError(formatDayMonth(row.date)))
     }
+    void entries.reloadRange()
   }
 
   /**
    * Receives the full array on purpose: rowStatus/rowProject are keyed by index and
    * must stay aligned with the table's row keys, so filtering happens inside.
    */
-  async function handleInsertAll(rows: TimeSheetRow[]) {
+  async function handleInsertAll(rows: TimeSheetRow[], replaceDates?: Set<IsoDate>) {
     const planned = rows.map((row, i) => ({
       i,
       row,
@@ -252,6 +228,7 @@ export function useClockify() {
       targets.map(async ({ i, row, projectId }) => {
         setRowSt(i, 'loading')
         try {
+          if (replaceDates?.has(row.date)) await entries.deleteDay(row.date)
           await postTimeEntry(apiKey, selectedWorkspace!, projectId!, row)
           setRowSt(i, 'done')
         } catch {
@@ -260,6 +237,7 @@ export function useClockify() {
         }
       })
     )
+    await entries.reloadRange()
     setInsertingAll(false)
 
     const errored = failed + invalid.length
@@ -270,6 +248,8 @@ export function useClockify() {
   return {
     apiKey,
     setApiKey,
+    userId,
+    entries,
     workspaces,
     selectedWorkspace,
     projects,

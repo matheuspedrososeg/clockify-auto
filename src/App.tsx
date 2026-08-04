@@ -5,6 +5,8 @@ import { useClockify } from './hooks/useClockify'
 import { useGitHub } from './hooks/useGitHub'
 import { useAutoProjects } from './hooks/useAutoProjects'
 import { useAliases } from './hooks/useAliases'
+import { useRoutine } from './hooks/useRoutine'
+import { useCleanup } from './hooks/useCleanup'
 import { TopNav } from './components/TopNav'
 import { HeroBand } from './components/HeroBand'
 import { AiModelPanel } from './components/AiModelPanel'
@@ -14,6 +16,8 @@ import { SourceSection } from './components/SourceSection'
 import { BulkBar } from './components/BulkBar'
 import { TimeSheetTable } from './components/TimeSheetTable'
 import { InsertAllBand } from './components/InsertAllBand'
+import { CleanupTable } from './components/CleanupTable'
+import { CleanupBand } from './components/CleanupBand'
 import './App.css'
 
 function App() {
@@ -21,15 +25,22 @@ function App() {
   const clockify = useClockify()
   const github = useGitHub()
   const aliases = useAliases()
+  const routine = useRoutine()
 
   const rows = report.rows
   const firstDate = rows?.[0]?.date
   const lastDate = rows?.[rows.length - 1]?.date
+  const cleanupMode = report.appMode === 'cleanup'
 
   useEffect(() => {
     if (github.status !== 'authenticated' || !firstDate || !lastDate) return
     github.loadCommitsForRange(firstDate, lastDate)
   }, [github, firstDate, lastDate])
+
+  useEffect(() => {
+    if (!clockify.clockifyConnected || !firstDate || !lastDate) return
+    clockify.entries.loadRange(firstDate, lastDate)
+  }, [clockify, firstDate, lastDate])
 
   useAutoProjects({
     rows,
@@ -39,9 +50,11 @@ function App() {
     applyAutoProjects: clockify.applyAutoProjects,
   })
 
+  const cleanup = useCleanup({ rows, clockify, routine: routine.routine })
+
   return (
     <div className="page">
-      <TopNav aliases={aliases} report={report} clockify={clockify} />
+      <TopNav aliases={aliases} routine={routine} report={report} clockify={clockify} />
       <HeroBand />
 
       <main className="content-band">
@@ -52,7 +65,7 @@ function App() {
             <GitHubPanel github={github} />
           </div>
 
-          <BulkBar clockify={clockify} />
+          <BulkBar clockify={clockify} appMode={report.appMode} />
 
           <SourceSection
             report={report}
@@ -66,7 +79,9 @@ function App() {
             </div>
           )}
 
-          {rows && (
+          {rows && cleanupMode && <CleanupTable clockify={clockify} cleanup={cleanup} />}
+
+          {rows && !cleanupMode && (
             <TimeSheetTable
               rows={rows}
               clockify={clockify}
@@ -78,7 +93,9 @@ function App() {
       </main>
 
       {rows && clockify.clockifyConnected && (
-        <InsertAllBand rows={rows} clockify={clockify} />
+        cleanupMode
+          ? <CleanupBand cleanup={cleanup} />
+          : <InsertAllBand rows={rows} clockify={clockify} />
       )}
 
     </div>

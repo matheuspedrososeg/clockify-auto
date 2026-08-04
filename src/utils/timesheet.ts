@@ -1,5 +1,5 @@
 import type { OcrRow, TimeSheetRow } from '../types/timesheet'
-import { dayMonthToIso, isValidTime, toUtcInstant } from './dates'
+import { dayMonthToIso, isValidTime, minutesBetween, toUtcInstant } from './dates'
 
 export type RowState = 'empty' | 'invalid' | 'ready'
 
@@ -35,6 +35,19 @@ export function buildEntries(row: TimeSheetRow): TimeEntry[] {
     start: toUtcInstant(row.date, row[from]),
     end: toUtcInstant(row.date, row[to]),
   }))
+}
+
+/** Only meaningful for a 'ready' row: an unpaired punch contributes nothing. */
+export function rowWorkedMinutes(row: TimeSheetRow): number {
+  return PAIRS.reduce(
+    (total, [from, to]) =>
+      row[from] && row[to] ? total + minutesBetween(row[from], row[to]) : total,
+    0,
+  )
+}
+
+export function rowCheckOut(row: TimeSheetRow): string {
+  return row.afternoonCheckOut || row.morningCheckOut
 }
 
 export function countRowStates(rows: TimeSheetRow[]) {
