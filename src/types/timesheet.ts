@@ -20,3 +20,5 @@ export type TimeField =
   | 'afternoonCheckOut'
 
 export type SourceMode = 'image' | 'period'
+
+export type AppMode = 'recover' | 'cleanup'

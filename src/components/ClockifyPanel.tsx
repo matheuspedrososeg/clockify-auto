@@ -1,8 +1,9 @@
-import { Button, Input } from 'antd'
+import { Button } from 'antd'
 import { DisconnectOutlined } from '@ant-design/icons'
 import type { ClockifyVM } from '../hooks/useClockify'
 import { useI18n } from '../i18n/useI18n'
 import { Panel } from './Panel'
+import { SecretInput } from './SecretInput'
 
 interface ClockifyPanelProps {
   clockify: ClockifyVM
@@ -20,10 +21,10 @@ export function ClockifyPanel({ clockify }: ClockifyPanelProps) {
       <div className="config-col">
         <div className="config-field">
           <label>{t.clockify.apiKey}</label>
-          <Input.Password
+          <SecretInput
             placeholder={t.clockify.apiKeyPlaceholder}
             value={apiKey}
-            onChange={e => setApiKey(e.target.value)}
+            onChange={setApiKey}
             onPressEnter={handleConnect}
             disabled={connected}
           />

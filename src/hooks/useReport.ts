@@ -3,7 +3,7 @@ import { message } from 'antd'
 import { GoogleGenAI } from "@google/genai"
 import Anthropic from "@anthropic-ai/sdk"
 import { useI18n } from '../i18n/useI18n'
-import type { OcrRow, SourceMode, TimeField, TimeSheetRow } from '../types/timesheet'
+import type { AppMode, OcrRow, SourceMode, TimeField, TimeSheetRow } from '../types/timesheet'
 import type { IsoDate } from '../utils/dates'
 import { MAX_RANGE_DAYS, daysInclusive, enumerateDays } from '../utils/dates'
 import { normalizeOcrRows } from '../utils/timesheet'
@@ -113,6 +113,7 @@ async function transcribeWithClaude(apiKey: string, imageInBase64: string, mimeT
 
 export function useReport() {
     const { t } = useI18n()
+    const [appMode, setAppModeState] = useState<AppMode>('recover')
     const [sourceMode, setSourceModeState] = useState<SourceMode>('image')
     const [rows, setRows] = useState<TimeSheetRow[] | null>(null)
     const [loading, setLoading] = useState(false)
@@ -146,6 +147,16 @@ export function useReport() {
         if (mode === sourceMode) return
         setSourceModeState(mode)
         replaceRows(null, onReplaced)
+    }
+
+    /**
+     * The rows are the same in both modes, so nothing index-keyed goes out of sync and
+     * none of it may be reset: wiping the auto-suggested projects here left them empty,
+     * since useAutoProjects only re-applies when the suggestions themselves change.
+     */
+    function setAppMode(mode: AppMode) {
+        if (mode === appMode) return
+        setAppModeState(mode)
     }
 
     function generateRowsForRange(start: IsoDate, end: IsoDate, onReplaced?: () => void) {
@@ -193,6 +204,7 @@ export function useReport() {
 
     return {
         rows, loading,
+        appMode, setAppMode,
         sourceMode, setSourceMode,
         selectedModel, setSelectedModel,
         geminiApiKey, setGeminiApiKey,

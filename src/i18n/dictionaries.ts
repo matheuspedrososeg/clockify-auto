@@ -69,10 +69,33 @@ const en = {
     addAlias: 'Add alias',
     remove: 'Remove',
   },
+  routine: {
+    section: 'Work routine',
+    hint: 'Used by the Cleanup mode to know how long a day should be when there is no timesheet to compare against.',
+    checkIn: 'Clock in',
+    lunchOut: 'Lunch break',
+    lunchIn: 'Back from lunch',
+    checkOut: 'Clock out',
+    workDays: 'Work days',
+    workload: (duration: string) => `Daily workload: ${duration}`,
+    days: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+  },
+  secret: {
+    reveal: 'Show the key',
+    hide: 'Hide the key',
+  },
   storage: {
     rememberKeys: 'Remember API keys',
     rememberHint:
       'Keys are saved in this browser only. Anyone with access to this device can read them.',
+  },
+  mode: {
+    recover: 'Recover',
+    cleanup: 'Cleanup',
+    hintRecover:
+      'Fill in the days and send them to Clockify. Days that already have entries are flagged before anything is sent.',
+    hintCleanup:
+      'Scan the period for days whose logged time is more than 10% off the workload — over, short, or missing entirely — and realign them.',
   },
   source: {
     title: 'Source',
@@ -116,6 +139,52 @@ const en = {
     error: 'Failed to load the commits.',
     retry: 'Try again',
   },
+  existing: {
+    column: 'In Clockify',
+    tag: (duration: string) => `${duration} logged`,
+    tooltip: (n: number) =>
+      `${n} entr${n === 1 ? 'y' : 'ies'} already in Clockify on this day. Adding will ask to replace them.`,
+    none: '—',
+  },
+  replace: {
+    title: 'Replace what is already in Clockify?',
+    content: (n: number) =>
+      `${n} day${n === 1 ? '' : 's'} already ${n === 1 ? 'has' : 'have'} entries in Clockify. They will be deleted and replaced by the times of the table.`,
+    daysLabel: 'Days',
+    ok: 'Delete and replace',
+    cancel: 'Cancel',
+  },
+  cleanup: {
+    header: (flagged: number, total: number) =>
+      `${flagged} of ${total} day${total === 1 ? '' : 's'} off the workload`,
+    logged: 'Logged',
+    expected: 'Expected',
+    difference: 'Difference',
+    statusMissing: 'nothing logged',
+    newEnd: 'New end',
+    fix: 'Fix',
+    fixed: 'Fixed',
+    retry: 'Retry',
+    sourceSheet: 'timesheet',
+    sourceRoutine: 'routine',
+    sourceNone: 'no workload',
+    empty: 'Every day of this period is within the workload.',
+    loading: 'Loading the Clockify entries...',
+    error: 'Failed to load the Clockify entries.',
+    retryLoad: 'Try again',
+    needsConnection: 'Connect Clockify to audit this period.',
+    notFixable:
+      'The clock out time cannot be applied to the last entry of this day. Fix it directly in Clockify.',
+    notFixableMissing:
+      'This day has no entry to adjust. Switch to the Recover mode to add it from scratch.',
+    entryRunning: 'running',
+    entryTarget: 'will be fixed',
+    entryNoProject: 'no project',
+    ctaTitle: 'Ready to realign the days',
+    ctaSubtitle: (n: number) => `${n} day${n === 1 ? '' : 's'} will be corrected.`,
+    ctaNothing: 'No day left to fix.',
+    ctaButton: 'Fix all',
+  },
   cta: {
     title: 'Ready to log your hours',
     subtitle: (n: number) => `${n} record${n === 1 ? '' : 's'} will be sent to Clockify.`,
@@ -140,6 +209,12 @@ const en = {
     missingProject: 'Select a project first',
     insertSummary: (ok: number, failed: number, skipped: number) =>
       `${ok} added, ${failed} failed, ${skipped} skipped.`,
+    entriesRangeError: 'Failed to load the Clockify entries for the period',
+    dayFixed: (date: string) => `Day ${date} corrected!`,
+    dayFixError: (date: string) => `Failed to correct day ${date}`,
+    allFixed: 'All days corrected successfully!',
+    fixSummary: (ok: number, failed: number) => `${ok} corrected, ${failed} failed.`,
+    nothingToFix: 'No day is ready to be corrected.',
     commitsRangeError: 'Failed to load the commits for the period',
     githubConnected: (username: string) => `GitHub connected as @${username}!`,
     githubAccessDenied: 'Access denied.',
@@ -222,10 +297,33 @@ const pt: Dictionary = {
     addAlias: 'Adicionar alias',
     remove: 'Remover',
   },
+  routine: {
+    section: 'Rotina de trabalho',
+    hint: 'Usada pelo modo Correção para saber quanto um dia deveria durar quando não há planilha para comparar.',
+    checkIn: 'Entrada',
+    lunchOut: 'Saída para o almoço',
+    lunchIn: 'Volta do almoço',
+    checkOut: 'Saída',
+    workDays: 'Dias de trabalho',
+    workload: (duration: string) => `Carga horária diária: ${duration}`,
+    days: ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'],
+  },
+  secret: {
+    reveal: 'Mostrar a chave',
+    hide: 'Esconder a chave',
+  },
   storage: {
     rememberKeys: 'Lembrar API keys',
     rememberHint:
       'As chaves ficam salvas só neste navegador. Qualquer pessoa com acesso a este dispositivo pode lê-las.',
+  },
+  mode: {
+    recover: 'Recuperar',
+    cleanup: 'Correção',
+    hintRecover:
+      'Preencha os dias e envie ao Clockify. Dias que já têm lançamentos são sinalizados antes de qualquer envio.',
+    hintCleanup:
+      'Varre o período procurando dias cujo tempo lançado está mais de 10% fora da carga horária — acima, abaixo ou sem nada lançado — e realinha.',
   },
   source: {
     title: 'Origem',
@@ -269,6 +367,53 @@ const pt: Dictionary = {
     error: 'Falha ao carregar os commits.',
     retry: 'Tentar novamente',
   },
+  existing: {
+    column: 'No Clockify',
+    tag: (duration: string) => `${duration} lançado`,
+    tooltip: (n: number) =>
+      `${n} lançamento${n === 1 ? '' : 's'} já ${n === 1 ? 'existe' : 'existem'} no Clockify neste dia. Inserir vai pedir confirmação para substituir.`,
+    none: '—',
+  },
+  replace: {
+    title: 'Substituir o que já está no Clockify?',
+    content: (n: number) =>
+      `${n} dia${n === 1 ? '' : 's'} já ${n === 1 ? 'tem' : 'têm'} lançamentos no Clockify. Eles serão apagados e substituídos pelos horários da tabela.`,
+    daysLabel: 'Dias',
+    ok: 'Apagar e substituir',
+    cancel: 'Cancelar',
+  },
+  cleanup: {
+    header: (flagged: number, total: number) =>
+      `${flagged} de ${total} dia${total === 1 ? '' : 's'} fora da carga horária`,
+    logged: 'Lançado',
+    expected: 'Esperado',
+    difference: 'Diferença',
+    statusMissing: 'sem lançamento',
+    newEnd: 'Novo fim',
+    fix: 'Corrigir',
+    fixed: 'Corrigido',
+    retry: 'Tentar novamente',
+    sourceSheet: 'planilha',
+    sourceRoutine: 'rotina',
+    sourceNone: 'sem carga',
+    empty: 'Todos os dias deste período estão dentro da carga horária.',
+    loading: 'Carregando os lançamentos do Clockify...',
+    error: 'Falha ao carregar os lançamentos do Clockify.',
+    retryLoad: 'Tentar novamente',
+    needsConnection: 'Conecte o Clockify para auditar este período.',
+    notFixable:
+      'O horário de saída não pode ser aplicado ao último lançamento deste dia. Corrija direto no Clockify.',
+    notFixableMissing:
+      'Este dia não tem lançamento para ajustar. Use o modo Recuperar para inserir do zero.',
+    entryRunning: 'rodando',
+    entryTarget: 'será corrigido',
+    entryNoProject: 'sem projeto',
+    ctaTitle: 'Pronto para realinhar os dias',
+    ctaSubtitle: (n: number) =>
+      `${n} dia${n === 1 ? '' : 's'} ${n === 1 ? 'será corrigido' : 'serão corrigidos'}.`,
+    ctaNothing: 'Nenhum dia restante para corrigir.',
+    ctaButton: 'Corrigir todos',
+  },
   cta: {
     title: 'Pronto para lançar suas horas',
     subtitle: (n: number) =>
@@ -295,6 +440,12 @@ const pt: Dictionary = {
     missingProject: 'Selecione um projeto primeiro',
     insertSummary: (ok: number, failed: number, skipped: number) =>
       `${ok} inseridos, ${failed} com erro, ${skipped} ignorados.`,
+    entriesRangeError: 'Falha ao carregar os lançamentos do Clockify do período',
+    dayFixed: (date: string) => `Dia ${date} corrigido!`,
+    dayFixError: (date: string) => `Erro ao corrigir o dia ${date}`,
+    allFixed: 'Todos os dias corrigidos com sucesso!',
+    fixSummary: (ok: number, failed: number) => `${ok} corrigidos, ${failed} com erro.`,
+    nothingToFix: 'Nenhum dia está pronto para ser corrigido.',
     commitsRangeError: 'Falha ao carregar os commits do período',
     githubConnected: (username: string) => `GitHub conectado como @${username}!`,
     githubAccessDenied: 'Acesso negado.',

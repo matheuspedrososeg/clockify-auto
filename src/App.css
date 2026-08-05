@@ -174,13 +174,47 @@
   min-width: 0;
 }
 
-.config-field label {
+/* Direct child only: antd renders its checkbox/radio wrappers as <label> too. */
+.config-field > label {
   font-size: 13px;
   font-weight: 700;
   line-height: 1.3;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   color: var(--muted);
+}
+
+/* --- secret input: masked without type="password" --- */
+.is-masked.ant-input,
+.is-masked .ant-input {
+  -webkit-text-security: disc;
+  letter-spacing: 1px;
+}
+
+/* Browsers without -webkit-text-security still must not render the key legibly. */
+@supports not (-webkit-text-security: disc) {
+  .is-masked.ant-input,
+  .is-masked .ant-input {
+    color: transparent;
+    text-shadow: 0 0 6px var(--body);
+  }
+}
+
+.secret-toggle {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  line-height: 1;
+  color: var(--muted-soft);
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.secret-toggle:hover,
+.secret-toggle:focus-visible {
+  color: var(--ink);
 }
 
 /* --- api key persistence opt-in --- */
@@ -224,6 +258,28 @@
 
 .section-head-row .section-head {
   margin: 0;
+}
+
+.section-head-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  min-width: 0;
+}
+
+.head-switches {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  flex-shrink: 0;
+}
+
+/* Two lines are reserved so switching mode never nudges the page. */
+.mode-hint {
+  margin: 0;
+  max-width: 640px;
+  min-height: 3.1em;
 }
 
 /* --- source: period mode --- */
@@ -310,6 +366,148 @@
 .bulk-field {
   flex: 1 1 240px;
   max-width: 360px;
+}
+
+/* --- existing entries (recover mode) --- */
+.existing-tag {
+  margin-inline-end: 0;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--warning);
+  border-color: var(--warning);
+  background: transparent;
+}
+
+.existing-none {
+  color: var(--muted-soft);
+}
+
+.existing-tooltip-text {
+  margin: 0 0 var(--space-xs);
+  font-size: 13px;
+  font-weight: 300;
+}
+
+/* antd caps the tooltip at 250px, which the entry rows overflow instead of wrapping. */
+.entry-tooltip {
+  max-width: min(560px, calc(100vw - 2 * var(--space-lg)));
+}
+
+.entry-tooltip .ant-tooltip-inner {
+  width: max-content;
+  max-width: 100%;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.entry-tooltip .entry-list {
+  padding: 0;
+}
+
+.entry-tooltip .entry-item,
+.entry-tooltip .entry-clock,
+.entry-tooltip .entry-duration,
+.entry-tooltip .entry-description {
+  color: var(--on-dark);
+}
+
+.entry-tooltip .entry-project {
+  max-width: none;
+  background: transparent;
+  border-color: var(--on-dark-soft);
+  color: var(--on-dark-soft);
+}
+
+/* --- cleanup mode --- */
+.cleanup-status {
+  margin-bottom: var(--space-md);
+}
+
+.cleanup-logged {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.cleanup-expected {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xxs);
+  font-variant-numeric: tabular-nums;
+}
+
+.cleanup-difference {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xxs);
+}
+
+.cleanup-over,
+.cleanup-under {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.cleanup-over {
+  color: var(--error);
+}
+
+.cleanup-under {
+  color: var(--warning);
+}
+
+/* --- clockify entries inside expandable rows and tooltips --- */
+.entry-list {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-xxs) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.entry-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 14px;
+  font-weight: 300;
+}
+
+.entry-clock {
+  font-family: var(--mono);
+  font-size: 12px;
+  letter-spacing: 0.5px;
+  flex-shrink: 0;
+}
+
+.entry-duration {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.entry-project {
+  flex-shrink: 0;
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.entry-description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.entry-flag {
+  flex-shrink: 0;
+  margin-inline-end: 0;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
 /* --- cta-band (pre-footer, dark) --- */
@@ -530,6 +728,60 @@
   padding: 0;
 }
 
+.routine-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.routine-grid .time-cell.ant-input {
+  width: 100%;
+  height: 48px;
+  text-align: start;
+}
+
+.routine-days {
+  gap: var(--space-sm);
+}
+
+.routine-days .ant-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs) var(--space-lg);
+}
+
+.routine-days .ant-checkbox-wrapper {
+  align-items: center;
+  margin-inline-end: 0;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 1;
+  color: var(--body);
+}
+
+.routine-days .ant-checkbox-wrapper > span:not(.ant-checkbox) {
+  padding-inline: var(--space-xs) 0;
+}
+
+.routine-days .ant-checkbox {
+  align-self: center;
+  inset-block-start: 0;
+}
+
+.routine-workload {
+  margin-top: var(--space-lg);
+}
+
+.replace-days {
+  margin-top: var(--space-sm);
+}
+
+.replace-days strong {
+  font-weight: 700;
+  color: var(--ink);
+}
+
 .alias-row-head span {
   font-size: 11px;
   font-weight: 700;
@@ -735,6 +987,12 @@
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-sm);
+  }
+
+  .head-switches {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
   }
 
   .ant-picker-dropdown {

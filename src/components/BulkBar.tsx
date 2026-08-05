@@ -1,23 +1,30 @@
 import { useState } from 'react'
 import { Select } from 'antd'
+import type { AppMode } from '../types/timesheet'
 import type { ClockifyVM } from '../hooks/useClockify'
 import { useI18n } from '../i18n/useI18n'
 import { StyledModal } from './StyledModal'
 
 interface BulkBarProps {
   clockify: ClockifyVM
+  appMode: AppMode
 }
 
-export function BulkBar({ clockify }: BulkBarProps) {
+/**
+ * Always mounted, even before Clockify is connected: letting the two selects appear
+ * only after connecting shifted everything below them down the page.
+ */
+export function BulkBar({ clockify, appMode }: BulkBarProps) {
   const { t } = useI18n()
   const [pendingProject, setPendingProject] = useState<string | null>(null)
   const {
     workspaces, selectedWorkspace, handleWorkspaceChange,
     projects, selectedProject, setBulkProject, autoProject,
-    loadingProjects, insertingAll,
+    loadingWorkspaces, loadingProjects, insertingAll,
   } = clockify
 
-  if (workspaces.length === 0) return null
+  // Cleanup never posts anything, so a bulk project has nothing to apply to.
+  const projectDisabled = appMode === 'cleanup' || !selectedWorkspace || insertingAll
 
   function handleProjectPick(projectId: string) {
     if (autoProject.size === 0) {
@@ -43,7 +50,8 @@ export function BulkBar({ clockify }: BulkBarProps) {
             value={selectedWorkspace}
             onChange={handleWorkspaceChange}
             options={workspaces.map(w => ({ value: w.id, label: w.name }))}
-            disabled={insertingAll}
+            loading={loadingWorkspaces}
+            disabled={workspaces.length === 0 || insertingAll}
           />
         </div>
         <div className="config-field bulk-field">
@@ -54,7 +62,7 @@ export function BulkBar({ clockify }: BulkBarProps) {
             value={selectedProject}
             onChange={handleProjectPick}
             loading={loadingProjects}
-            disabled={!selectedWorkspace || insertingAll}
+            disabled={projectDisabled}
             options={projects.map(p => ({ value: p.id, label: p.name }))}
           />
         </div>

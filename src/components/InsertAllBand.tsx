@@ -1,8 +1,10 @@
+import { useState } from 'react'
 import { Button } from 'antd'
 import type { TimeSheetRow } from '../types/timesheet'
 import type { ClockifyVM } from '../hooks/useClockify'
 import { useI18n } from '../i18n/useI18n'
 import { countRowStates, rowState } from '../utils/timesheet'
+import { ReplaceConfirmModal } from './ReplaceConfirmModal'
 
 interface InsertAllBandProps {
   rows: TimeSheetRow[]
@@ -11,15 +13,34 @@ interface InsertAllBandProps {
 
 export function InsertAllBand({ rows, clockify }: InsertAllBandProps) {
   const { t } = useI18n()
+  const [confirming, setConfirming] = useState(false)
   const { ready, empty } = countRowStates(rows)
-  const insertable = rows.filter(
+  const targets = rows.filter(
     (row, i) => rowState(row) === 'ready' && !!clockify.resolveProject(i),
-  ).length
+  )
+  const insertable = targets.length
+
+  const conflictDates = targets
+    .map(row => row.date)
+    .filter(date => (clockify.entries.byDay.get(date)?.length ?? 0) > 0)
 
   const status =
     insertable > 0 ? t.cta.subtitle(insertable)
     : ready > 0 ? t.cta.missingProject
     : t.cta.nothingToSend
+
+  function handleClick() {
+    if (conflictDates.length === 0) {
+      clockify.handleInsertAll(rows)
+      return
+    }
+    setConfirming(true)
+  }
+
+  function confirmReplace() {
+    setConfirming(false)
+    clockify.handleInsertAll(rows, new Set(conflictDates))
+  }
 
   return (
     <section className="cta-band">
@@ -34,12 +55,20 @@ export function InsertAllBand({ rows, clockify }: InsertAllBandProps) {
             type="primary"
             loading={clockify.insertingAll}
             disabled={insertable === 0}
-            onClick={() => clockify.handleInsertAll(rows)}
+            onClick={handleClick}
           >
             {t.cta.button}
           </Button>
         </div>
       </div>
+
+      {confirming && (
+        <ReplaceConfirmModal
+          dates={conflictDates}
+          onConfirm={confirmReplace}
+          onCancel={() => setConfirming(false)}
+        />
+      )}
     </section>
   )
 }

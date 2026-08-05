@@ -1,7 +1,8 @@
-import { Input, Segmented } from 'antd'
+import { Segmented } from 'antd'
 import type { AIModel, ReportVM } from '../hooks/useReport'
 import { useI18n } from '../i18n/useI18n'
 import { Panel } from './Panel'
+import { SecretInput } from './SecretInput'
 
 const MODEL_OPTIONS = [
   { label: 'Gemini 3.5 Flash', value: 'gemini-3.5-flash' },
@@ -32,20 +33,20 @@ export function AiModelPanel({ report }: AiModelPanelProps) {
         {selectedModel === 'gemini-3.5-flash' && (
           <div className="config-field">
             <label>{t.ai.geminiKey}</label>
-            <Input.Password
+            <SecretInput
               placeholder={t.ai.geminiPlaceholder}
               value={geminiApiKey}
-              onChange={e => setGeminiApiKey(e.target.value)}
+              onChange={setGeminiApiKey}
             />
           </div>
         )}
         {selectedModel === 'claude-sonnet-4-6' && (
           <div className="config-field">
             <label>{t.ai.claudeKey}</label>
-            <Input.Password
+            <SecretInput
               placeholder={t.ai.claudePlaceholder}
               value={claudeApiKey}
-              onChange={e => setClaudeApiKey(e.target.value)}
+              onChange={setClaudeApiKey}
             />
           </div>
         )}
