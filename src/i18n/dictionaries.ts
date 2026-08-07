@@ -7,7 +7,8 @@ const en = {
   hero: {
     eyebrow: 'Time tracking automation',
     title: 'Clockify Auto',
-    subtitle: 'Import a timesheet image or pick a date period, then log everything into Clockify.',
+    subtitle:
+      'Import a timesheet image, a CSV file or pick a date period, then log everything into Clockify.',
   },
   ai: {
     title: 'AI model',
@@ -100,6 +101,7 @@ const en = {
   source: {
     title: 'Source',
     modeImage: 'Timesheet image',
+    modeCsv: 'CSV file',
     modePeriod: 'Date period',
     periodLabel: 'Period',
     periodHint: (max: number) => `Pick a range of up to ${max} days.`,
@@ -110,6 +112,13 @@ const en = {
   upload: {
     text: 'Click or drag the spreadsheet here',
     hint: 'Supports PNG images of the timesheet',
+  },
+  csv: {
+    dropText: 'Click or drag the CSV here',
+    dropHint: 'Read in the browser — no AI key needed. Comma, semicolon or tab separated.',
+    change: 'Change file',
+    columnPlaceholder: 'CSV column',
+    hint: 'Pick which CSV column feeds each field. Only the date is required — the rest come in blank and can be typed in the table.',
   },
   table: {
     date: 'Date',
@@ -199,6 +208,9 @@ const en = {
   messages: {
     missingApiKey: 'Enter the API key of the selected model',
     processError: 'Failed to process the spreadsheet',
+    csvParseError: 'Failed to read the CSV file',
+    csvMissingDate: 'Pick the CSV column that holds the date',
+    csvNoRows: 'No row of the CSV has a readable date',
     invalidClockifyKey: 'Invalid API key or missing permission',
     projectsError: 'Failed to load projects',
     dayInserted: (date: string) => `Day ${date} added to Clockify!`,
@@ -239,7 +251,7 @@ const pt: Dictionary = {
     eyebrow: 'Automação de ponto',
     title: 'Clockify Auto',
     subtitle:
-      'Importe uma imagem da planilha de ponto ou escolha um período e lance tudo no Clockify.',
+      'Importe uma imagem da planilha de ponto, um arquivo CSV ou escolha um período e lance tudo no Clockify.',
   },
   ai: {
     title: 'Modelo de IA',
@@ -332,6 +344,7 @@ const pt: Dictionary = {
   source: {
     title: 'Origem',
     modeImage: 'Imagem da planilha',
+    modeCsv: 'Arquivo CSV',
     modePeriod: 'Período',
     periodLabel: 'Período',
     periodHint: (max: number) => `Escolha um intervalo de até ${max} dias.`,
@@ -342,6 +355,13 @@ const pt: Dictionary = {
   upload: {
     text: 'Clique ou arraste a planilha aqui',
     hint: 'Suporta imagens PNG da planilha de ponto',
+  },
+  csv: {
+    dropText: 'Clique ou arraste o CSV aqui',
+    dropHint: 'Lido no navegador — não precisa de chave de IA. Separado por vírgula, ponto e vírgula ou tabulação.',
+    change: 'Trocar arquivo',
+    columnPlaceholder: 'Coluna do CSV',
+    hint: 'Escolha qual coluna do CSV alimenta cada campo. Só a data é obrigatória — os demais vêm em branco e podem ser digitados na tabela.',
   },
   table: {
     date: 'Data',
@@ -434,6 +454,9 @@ const pt: Dictionary = {
   messages: {
     missingApiKey: 'Insira a API key do modelo selecionado',
     processError: 'Erro ao processar a planilha',
+    csvParseError: 'Erro ao ler o arquivo CSV',
+    csvMissingDate: 'Escolha a coluna do CSV que tem a data',
+    csvNoRows: 'Nenhuma linha do CSV tem uma data legível',
     invalidClockifyKey: 'API key inválida ou sem permissão',
     projectsError: 'Falha ao carregar projetos',
     dayInserted: (date: string) => `Dia ${date} inserido no Clockify!`,

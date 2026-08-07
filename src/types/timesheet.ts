@@ -19,6 +19,11 @@ export type TimeField =
   | 'afternoonCheckIn'
   | 'afternoonCheckOut'
 
-export type SourceMode = 'image' | 'period'
+export type SourceMode = 'image' | 'period' | 'csv'
+
+export type CsvField = 'date' | TimeField
+
+/** Which CSV header feeds each row field; `null` means the field stays blank. */
+export type CsvMapping = Record<CsvField, string | null>
 
 export type AppMode = 'recover' | 'cleanup'

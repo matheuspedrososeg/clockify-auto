@@ -9,6 +9,7 @@ import type { GitHubCommit } from './useGitHub'
 
 interface UseAutoProjectsParams {
   rows: TimeSheetRow[] | null
+  rowsVersion: number
   commitsCache: Map<IsoDate, GitHubCommit[]>
   projects: ClockifyProject[]
   aliases: ProjectAlias[]
@@ -17,6 +18,7 @@ interface UseAutoProjectsParams {
 
 export function useAutoProjects({
   rows,
+  rowsVersion,
   commitsCache,
   projects,
   aliases,
@@ -38,8 +40,9 @@ export function useAutoProjects({
     applyRef.current = applyAutoProjects
   })
 
+  /** rowsVersion re-applies after a regenerate that produced the very same dates. */
   useEffect(() => {
     if (!suggestions || suggestions.size === 0) return
     applyRef.current(suggestions)
-  }, [suggestions])
+  }, [suggestions, rowsVersion])
 }

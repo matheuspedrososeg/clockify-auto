@@ -44,6 +44,7 @@ function App() {
 
   useAutoProjects({
     rows,
+    rowsVersion: report.rowsVersion,
     commitsCache: github.commitsCache,
     projects: clockify.projects,
     aliases: aliases.aliases,

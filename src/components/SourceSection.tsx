@@ -6,11 +6,13 @@ import type { AppMode, SourceMode } from '../types/timesheet'
 import type { Dictionary } from '../i18n/dictionaries'
 import { useI18n } from '../i18n/useI18n'
 import { UploadDropzone } from './UploadDropzone'
+import { CsvForm } from './CsvForm'
 import { PeriodForm, type RangeValue } from './PeriodForm'
 
 function buildSourceOptions(t: Dictionary) {
   return [
     { label: t.source.modeImage, value: 'image' as const },
+    { label: t.source.modeCsv, value: 'csv' as const },
     { label: t.source.modePeriod, value: 'period' as const },
   ]
 }
@@ -65,9 +67,18 @@ export function SourceSection({ report, github, onBeforeProcess }: SourceSection
         </div>
       </div>
 
-      {report.sourceMode === 'image' ? (
+      {report.sourceMode === 'image' && (
         <UploadDropzone report={report} onBeforeProcess={onBeforeProcess} />
-      ) : (
+      )}
+
+      {report.sourceMode === 'csv' && (
+        <CsvForm
+          report={report}
+          onGenerate={() => report.generateRowsFromCsv(onBeforeProcess)}
+        />
+      )}
+
+      {report.sourceMode === 'period' && (
         <PeriodForm
           value={period}
           onChange={setPeriod}
