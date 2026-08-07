@@ -137,7 +137,11 @@ export function inferYear(day: number, month: number, ref = new Date()): number 
 }
 
 export function dayMonthToIso(raw: string, ref = new Date()): IsoDate | null {
-  const parts = raw.trim().split(/[/\-.]/)
+  const trimmed = raw.trim()
+  /** CSV exports often already carry ISO, which the day-first split below would read as day 2026. */
+  if (isValidIsoDate(trimmed)) return trimmed
+
+  const parts = trimmed.split(/[/\-.]/)
   if (parts.length < 2 || parts.length > 3) return null
 
   const day = Number(parts[0])

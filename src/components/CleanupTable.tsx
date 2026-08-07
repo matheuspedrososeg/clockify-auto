@@ -142,12 +142,13 @@ export function CleanupTable({ clockify, cleanup }: CleanupTableProps) {
               type={status === 'done' || status === 'error' ? 'default' : 'primary'}
               danger={status === 'error'}
               loading={status === 'loading'}
-              disabled={!fixable || status === 'done' || cleanup.fixingAll}
+              disabled={!fixable || status === 'done' || status === 'queued' || cleanup.fixingAll}
               onClick={() => cleanup.fixDay(record)}
               icon={status === 'done' ? <CheckOutlined /> : undefined}
             >
               {status === 'done' ? t.cleanup.fixed
                 : status === 'error' ? t.cleanup.retry
+                : status === 'queued' ? t.cleanup.queued
                 : t.cleanup.fix}
             </Button>
           </Tooltip>

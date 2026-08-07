@@ -325,6 +325,40 @@
   margin: 0;
 }
 
+/* --- csv source --- */
+.csv-form {
+  display: flex;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: var(--space-md);
+  min-height: 172px;
+  background: var(--surface-card);
+  border: 1px solid var(--hairline-strong);
+  padding: var(--space-lg);
+  box-sizing: border-box;
+}
+
+.csv-file-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  flex: 1 1 100%;
+  min-width: 0;
+}
+
+.csv-file-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.csv-field {
+  flex: 1 1 180px;
+}
+
 /* --- editable time cells --- */
 .time-cell.ant-input {
   width: 72px;
@@ -1008,6 +1042,30 @@
     width: 100%;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  /* Three source options overflow at this width, so split the row evenly and let the
+     longest label wrap instead of being ellipsized. */
+  .head-switches .ant-segmented {
+    width: 100%;
+  }
+
+  .head-switches .ant-segmented-item {
+    flex: 1 1 0;
+    min-width: 0;
+  }
+
+  .head-switches .ant-segmented-item-label {
+    min-height: 48px;
+    height: auto;
+    padding: var(--space-xs) var(--space-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    white-space: normal;
+    line-height: 1.25;
+    text-align: center;
+    font-size: 14px;
   }
 
   .ant-picker-dropdown {
