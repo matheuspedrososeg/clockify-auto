@@ -15,8 +15,23 @@
 
 /* --- top-nav --- */
 .top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 10;
   background: var(--canvas);
   border-bottom: 1px solid var(--hairline);
+  transition: transform 240ms ease;
+}
+
+/* 1px extra hides the bottom border along with the bar. */
+.top-nav.is-hidden {
+  transform: translateY(calc(-100% - 1px));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .top-nav {
+    transition: none;
+  }
 }
 
 .top-nav-inner {

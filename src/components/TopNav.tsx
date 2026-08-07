@@ -6,6 +6,7 @@ import type { ClockifyVM } from '../hooks/useClockify'
 import type { AliasesVM } from '../hooks/useAliases'
 import type { RoutineVM } from '../hooks/useRoutine'
 import { useI18n } from '../i18n/useI18n'
+import { useHideOnScrollDown } from '../hooks/useHideOnScrollDown'
 import { SettingsModal } from './SettingsModal'
 
 interface TopNavProps {
@@ -18,9 +19,10 @@ interface TopNavProps {
 export function TopNav({ aliases, routine, report, clockify }: TopNavProps) {
   const { t } = useI18n()
   const [settingsOpen, setSettingsOpen] = useState(false)
+  const hidden = useHideOnScrollDown()
 
   return (
-    <nav className="top-nav">
+    <nav className={hidden ? 'top-nav is-hidden' : 'top-nav'}>
       <div className="band-inner top-nav-inner">
         <span className="top-nav-brand">{t.nav.brand}</span>
         <Button icon={<SettingOutlined />} onClick={() => setSettingsOpen(true)}>
