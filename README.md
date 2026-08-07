@@ -11,6 +11,7 @@ If you don't have a spreadsheet to upload, pick a date range instead and fill in
 ## Features
 
 - **Screenshot → timesheet** — OCR a spreadsheet image with Gemini or Claude and get a structured, day-by-day table.
+- **CSV import** — parsed locally, no AI key required; map each CSV column to a field (date, clock in, lunch break, back from lunch, clock out) and the table is built in code.
 - **Manual date range** — no image needed; generate blank rows for any period (up to 30 days) and type the hours in.
 - **GitHub commit context** — connects via OAuth device flow and lists your commits per day, so you can reconstruct a forgotten week.
 - **Inline validation** — each row is flagged as ready, invalid (missing pair, end before start) or empty before anything is sent.
@@ -57,7 +58,7 @@ The Gemini, Claude and Clockify keys are entered in the UI at runtime — they a
 
 ## How it works
 
-1. **Source** — an image is base64-encoded in the browser and sent to the selected model with a strict JSON-only prompt; the response is normalized (`DD/MM` → ISO dates, deduplicated, sorted). Or rows are generated from a date range.
+1. **Source** — one of three. An image is base64-encoded in the browser and sent to the selected model with a strict JSON-only prompt. A CSV is parsed in the browser with papaparse (delimiter auto-detected), columns are auto-mapped by header name and can be overridden by hand. Or rows are generated blank from a date range. The first two go through the same normalization (`DD/MM`, `DD/MM/YYYY` or ISO → ISO dates, deduplicated, sorted).
 2. **Review** — the table renders one row per day with four editable time cells, a validity badge, and (when GitHub is connected) that day's commits.
 3. **Insert** — valid rows become Clockify time entries: one entry per filled morning/afternoon pair, posted to the chosen workspace and project.
 

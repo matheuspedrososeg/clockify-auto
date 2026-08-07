@@ -3,9 +3,19 @@ import { message } from 'antd'
 import { GoogleGenAI } from "@google/genai"
 import Anthropic from "@anthropic-ai/sdk"
 import { useI18n } from '../i18n/useI18n'
-import type { AppMode, OcrRow, SourceMode, TimeField, TimeSheetRow } from '../types/timesheet'
+import type {
+    AppMode,
+    CsvField,
+    CsvMapping,
+    OcrRow,
+    SourceMode,
+    TimeField,
+    TimeSheetRow,
+} from '../types/timesheet'
 import type { IsoDate } from '../utils/dates'
 import { MAX_RANGE_DAYS, daysInclusive, enumerateDays } from '../utils/dates'
+import type { CsvTable } from '../utils/csv'
+import { EMPTY_CSV_MAPPING, guessMapping, mapCsvRows, parseCsvFile } from '../utils/csv'
 import { normalizeOcrRows } from '../utils/timesheet'
 import { readKey, writeKey } from '../utils/keyStorage'
 
@@ -116,8 +126,12 @@ export function useReport() {
     const [appMode, setAppModeState] = useState<AppMode>('recover')
     const [sourceMode, setSourceModeState] = useState<SourceMode>('image')
     const [rows, setRows] = useState<TimeSheetRow[] | null>(null)
+    const [rowsVersion, setRowsVersion] = useState(0)
     const [loading, setLoading] = useState(false)
     const [selectedModel, setSelectedModel] = useState<AIModel>('gemini-3.5-flash')
+    const [csvTable, setCsvTable] = useState<CsvTable | null>(null)
+    const [csvFileName, setCsvFileName] = useState('')
+    const [csvMapping, setCsvMapping] = useState<CsvMapping>(EMPTY_CSV_MAPPING)
     const [geminiApiKey, setGeminiKeyState] = useState(
         () => readKey('gemini_api_key') || ''
     )
@@ -138,14 +152,26 @@ export function useReport() {
     const activeApiKey = selectedModel === 'claude-sonnet-4-6' ? claudeApiKey : geminiApiKey
     const canProcess = !!activeApiKey.trim()
 
+    /**
+     * onReplaced wipes the auto-suggested projects, and regenerating the same dates leaves
+     * the suggestions themselves untouched, so bump a counter for useAutoProjects to key on.
+     */
     function replaceRows(next: TimeSheetRow[] | null, onReplaced?: () => void) {
         setRows(next)
+        setRowsVersion(v => v + 1)
         onReplaced?.()
+    }
+
+    function clearCsv() {
+        setCsvTable(null)
+        setCsvFileName('')
+        setCsvMapping(EMPTY_CSV_MAPPING)
     }
 
     function setSourceMode(mode: SourceMode, onReplaced?: () => void) {
         if (mode === sourceMode) return
         setSourceModeState(mode)
+        clearCsv()
         replaceRows(null, onReplaced)
     }
 
@@ -168,6 +194,39 @@ export function useReport() {
             enumerateDays(start, end).map(date => ({ date, ...BLANK_TIMES })),
             onReplaced,
         )
+    }
+
+    async function loadCsvFile(file: File): Promise<void> {
+        setLoading(true)
+        try {
+            const table = await parseCsvFile(file)
+            setCsvTable(table)
+            setCsvFileName(file.name)
+            setCsvMapping(guessMapping(table.headers))
+        } catch (error) {
+            console.log(error)
+            clearCsv()
+            message.error(t.messages.csvParseError)
+        } finally {
+            setLoading(false)
+        }
+    }
+
+    function setCsvMappingField(field: CsvField, header: string | null) {
+        setCsvMapping(prev => ({ ...prev, [field]: header }))
+    }
+
+    function generateRowsFromCsv(onReplaced?: () => void) {
+        if (!csvTable || !csvMapping.date) {
+            message.error(t.messages.csvMissingDate)
+            return
+        }
+        const next = normalizeOcrRows(mapCsvRows(csvTable, csvMapping))
+        if (next.length === 0) {
+            message.error(t.messages.csvNoRows)
+            return
+        }
+        replaceRows(next, onReplaced)
     }
 
     function updateRowTime(index: number, field: TimeField, value: string) {
@@ -203,7 +262,7 @@ export function useReport() {
     }
 
     return {
-        rows, loading,
+        rows, rowsVersion, loading,
         appMode, setAppMode,
         sourceMode, setSourceMode,
         selectedModel, setSelectedModel,
@@ -213,6 +272,8 @@ export function useReport() {
         processFile,
         generateRowsForRange,
         updateRowTime,
+        csvTable, csvFileName, csvMapping,
+        loadCsvFile, setCsvMappingField, clearCsv, generateRowsFromCsv,
     }
 }
 

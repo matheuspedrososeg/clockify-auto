@@ -57,7 +57,9 @@ export function InsertAllBand({ rows, clockify }: InsertAllBandProps) {
             disabled={insertable === 0}
             onClick={handleClick}
           >
-            {t.cta.button}
+            {clockify.insertProgress
+              ? t.cta.buttonProgress(clockify.insertProgress.done, clockify.insertProgress.total)
+              : t.cta.button}
           </Button>
         </div>
       </div>

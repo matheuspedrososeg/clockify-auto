@@ -7,7 +7,8 @@ const en = {
   hero: {
     eyebrow: 'Time tracking automation',
     title: 'Clockify Auto',
-    subtitle: 'Import a timesheet image or pick a date period, then log everything into Clockify.',
+    subtitle:
+      'Import a timesheet image, a CSV file or pick a date period, then log everything into Clockify.',
   },
   ai: {
     title: 'AI model',
@@ -100,6 +101,7 @@ const en = {
   source: {
     title: 'Source',
     modeImage: 'Timesheet image',
+    modeCsv: 'CSV file',
     modePeriod: 'Date period',
     periodLabel: 'Period',
     periodHint: (max: number) => `Pick a range of up to ${max} days.`,
@@ -111,6 +113,13 @@ const en = {
     text: 'Click or drag the spreadsheet here',
     hint: 'Supports PNG images of the timesheet',
   },
+  csv: {
+    dropText: 'Click or drag the CSV here',
+    dropHint: 'Read in the browser — no AI key needed. Comma, semicolon or tab separated.',
+    change: 'Change file',
+    columnPlaceholder: 'CSV column',
+    hint: 'Pick which CSV column feeds each field. Only the date is required — the rest come in blank and can be typed in the table.',
+  },
   table: {
     date: 'Date',
     checkIn: 'Clock in',
@@ -121,6 +130,7 @@ const en = {
     bulkProject: 'Project for all days',
     insert: 'Add',
     inserted: 'Added',
+    queued: 'Queued',
     retry: 'Retry',
     timePlaceholder: '--:--',
     timeInvalid: 'Use the HH:MM format',
@@ -164,6 +174,7 @@ const en = {
     newEnd: 'New end',
     fix: 'Fix',
     fixed: 'Fixed',
+    queued: 'Queued',
     retry: 'Retry',
     sourceSheet: 'timesheet',
     sourceRoutine: 'routine',
@@ -192,10 +203,14 @@ const en = {
     nothingToSend: 'Fill in at least one day to continue.',
     missingProject: 'Pick a project to continue.',
     button: 'Add all to Clockify',
+    buttonProgress: (done: number, total: number) => `Adding ${done}/${total}...`,
   },
   messages: {
     missingApiKey: 'Enter the API key of the selected model',
     processError: 'Failed to process the spreadsheet',
+    csvParseError: 'Failed to read the CSV file',
+    csvMissingDate: 'Pick the CSV column that holds the date',
+    csvNoRows: 'No row of the CSV has a readable date',
     invalidClockifyKey: 'Invalid API key or missing permission',
     projectsError: 'Failed to load projects',
     dayInserted: (date: string) => `Day ${date} added to Clockify!`,
@@ -209,6 +224,7 @@ const en = {
     missingProject: 'Select a project first',
     insertSummary: (ok: number, failed: number, skipped: number) =>
       `${ok} added, ${failed} failed, ${skipped} skipped.`,
+    rateLimited: 'Clockify rate limit reached. Wait a moment and retry the failed days.',
     entriesRangeError: 'Failed to load the Clockify entries for the period',
     dayFixed: (date: string) => `Day ${date} corrected!`,
     dayFixError: (date: string) => `Failed to correct day ${date}`,
@@ -235,7 +251,7 @@ const pt: Dictionary = {
     eyebrow: 'Automação de ponto',
     title: 'Clockify Auto',
     subtitle:
-      'Importe uma imagem da planilha de ponto ou escolha um período e lance tudo no Clockify.',
+      'Importe uma imagem da planilha de ponto, um arquivo CSV ou escolha um período e lance tudo no Clockify.',
   },
   ai: {
     title: 'Modelo de IA',
@@ -328,6 +344,7 @@ const pt: Dictionary = {
   source: {
     title: 'Origem',
     modeImage: 'Imagem da planilha',
+    modeCsv: 'Arquivo CSV',
     modePeriod: 'Período',
     periodLabel: 'Período',
     periodHint: (max: number) => `Escolha um intervalo de até ${max} dias.`,
@@ -339,6 +356,13 @@ const pt: Dictionary = {
     text: 'Clique ou arraste a planilha aqui',
     hint: 'Suporta imagens PNG da planilha de ponto',
   },
+  csv: {
+    dropText: 'Clique ou arraste o CSV aqui',
+    dropHint: 'Lido no navegador — não precisa de chave de IA. Separado por vírgula, ponto e vírgula ou tabulação.',
+    change: 'Trocar arquivo',
+    columnPlaceholder: 'Coluna do CSV',
+    hint: 'Escolha qual coluna do CSV alimenta cada campo. Só a data é obrigatória — os demais vêm em branco e podem ser digitados na tabela.',
+  },
   table: {
     date: 'Data',
     checkIn: 'Entrada',
@@ -349,6 +373,7 @@ const pt: Dictionary = {
     bulkProject: 'Projeto para todos os dias',
     insert: 'Inserir',
     inserted: 'Inserido',
+    queued: 'Na fila',
     retry: 'Tentar novamente',
     timePlaceholder: '--:--',
     timeInvalid: 'Use o formato HH:MM',
@@ -392,6 +417,7 @@ const pt: Dictionary = {
     newEnd: 'Novo fim',
     fix: 'Corrigir',
     fixed: 'Corrigido',
+    queued: 'Na fila',
     retry: 'Tentar novamente',
     sourceSheet: 'planilha',
     sourceRoutine: 'rotina',
@@ -423,10 +449,14 @@ const pt: Dictionary = {
     nothingToSend: 'Preencha pelo menos um dia para continuar.',
     missingProject: 'Escolha um projeto para continuar.',
     button: 'Inserir todos no Clockify',
+    buttonProgress: (done: number, total: number) => `Inserindo ${done}/${total}...`,
   },
   messages: {
     missingApiKey: 'Insira a API key do modelo selecionado',
     processError: 'Erro ao processar a planilha',
+    csvParseError: 'Erro ao ler o arquivo CSV',
+    csvMissingDate: 'Escolha a coluna do CSV que tem a data',
+    csvNoRows: 'Nenhuma linha do CSV tem uma data legível',
     invalidClockifyKey: 'API key inválida ou sem permissão',
     projectsError: 'Falha ao carregar projetos',
     dayInserted: (date: string) => `Dia ${date} inserido no Clockify!`,
@@ -440,6 +470,8 @@ const pt: Dictionary = {
     missingProject: 'Selecione um projeto primeiro',
     insertSummary: (ok: number, failed: number, skipped: number) =>
       `${ok} inseridos, ${failed} com erro, ${skipped} ignorados.`,
+    rateLimited:
+      'Limite de requisições do Clockify atingido. Aguarde um instante e tente novamente os dias que falharam.',
     entriesRangeError: 'Falha ao carregar os lançamentos do Clockify do período',
     dayFixed: (date: string) => `Dia ${date} corrigido!`,
     dayFixError: (date: string) => `Erro ao corrigir o dia ${date}`,
