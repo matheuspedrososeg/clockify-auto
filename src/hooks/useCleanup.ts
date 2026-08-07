@@ -6,6 +6,7 @@ import type { DayAudit } from '../utils/cleanup'
 import { auditDays, planFix } from '../utils/cleanup'
 import type { IsoDate } from '../utils/dates'
 import { formatDayMonth } from '../utils/dates'
+import { ROW_CONCURRENCY, mapLimited } from '../utils/rateLimit'
 import type { Routine } from '../utils/routineStorage'
 import type { ClockifyVM, RowStatus } from './useClockify'
 
@@ -78,7 +79,8 @@ export function useCleanup({ rows, clockify, routine }: UseCleanupParams) {
     }
 
     setFixingAll(true)
-    const results = await Promise.all(targets.map(applyFix))
+    targets.forEach(audit => setStatus(prev => new Map(prev).set(audit.date, 'queued')))
+    const results = await mapLimited(targets, ROW_CONCURRENCY, applyFix)
     setFixingAll(false)
 
     const ok = results.filter(Boolean).length

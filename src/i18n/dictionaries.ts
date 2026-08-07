@@ -121,6 +121,7 @@ const en = {
     bulkProject: 'Project for all days',
     insert: 'Add',
     inserted: 'Added',
+    queued: 'Queued',
     retry: 'Retry',
     timePlaceholder: '--:--',
     timeInvalid: 'Use the HH:MM format',
@@ -164,6 +165,7 @@ const en = {
     newEnd: 'New end',
     fix: 'Fix',
     fixed: 'Fixed',
+    queued: 'Queued',
     retry: 'Retry',
     sourceSheet: 'timesheet',
     sourceRoutine: 'routine',
@@ -192,6 +194,7 @@ const en = {
     nothingToSend: 'Fill in at least one day to continue.',
     missingProject: 'Pick a project to continue.',
     button: 'Add all to Clockify',
+    buttonProgress: (done: number, total: number) => `Adding ${done}/${total}...`,
   },
   messages: {
     missingApiKey: 'Enter the API key of the selected model',
@@ -209,6 +212,7 @@ const en = {
     missingProject: 'Select a project first',
     insertSummary: (ok: number, failed: number, skipped: number) =>
       `${ok} added, ${failed} failed, ${skipped} skipped.`,
+    rateLimited: 'Clockify rate limit reached. Wait a moment and retry the failed days.',
     entriesRangeError: 'Failed to load the Clockify entries for the period',
     dayFixed: (date: string) => `Day ${date} corrected!`,
     dayFixError: (date: string) => `Failed to correct day ${date}`,
@@ -349,6 +353,7 @@ const pt: Dictionary = {
     bulkProject: 'Projeto para todos os dias',
     insert: 'Inserir',
     inserted: 'Inserido',
+    queued: 'Na fila',
     retry: 'Tentar novamente',
     timePlaceholder: '--:--',
     timeInvalid: 'Use o formato HH:MM',
@@ -392,6 +397,7 @@ const pt: Dictionary = {
     newEnd: 'Novo fim',
     fix: 'Corrigir',
     fixed: 'Corrigido',
+    queued: 'Na fila',
     retry: 'Tentar novamente',
     sourceSheet: 'planilha',
     sourceRoutine: 'rotina',
@@ -423,6 +429,7 @@ const pt: Dictionary = {
     nothingToSend: 'Preencha pelo menos um dia para continuar.',
     missingProject: 'Escolha um projeto para continuar.',
     button: 'Inserir todos no Clockify',
+    buttonProgress: (done: number, total: number) => `Inserindo ${done}/${total}...`,
   },
   messages: {
     missingApiKey: 'Insira a API key do modelo selecionado',
@@ -440,6 +447,8 @@ const pt: Dictionary = {
     missingProject: 'Selecione um projeto primeiro',
     insertSummary: (ok: number, failed: number, skipped: number) =>
       `${ok} inseridos, ${failed} com erro, ${skipped} ignorados.`,
+    rateLimited:
+      'Limite de requisições do Clockify atingido. Aguarde um instante e tente novamente os dias que falharam.',
     entriesRangeError: 'Falha ao carregar os lançamentos do Clockify do período',
     dayFixed: (date: string) => `Dia ${date} corrigido!`,
     dayFixError: (date: string) => `Erro ao corrigir o dia ${date}`,

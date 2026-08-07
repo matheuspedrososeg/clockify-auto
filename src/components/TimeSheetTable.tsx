@@ -148,11 +148,17 @@ function buildClockifyColumns(
               type={status === 'done' || status === 'error' ? 'default' : 'primary'}
               danger={status === 'error'}
               loading={status === 'loading'}
-              disabled={state !== 'ready' || !hasProject || status === 'done' || insertingAll}
+              disabled={
+                state !== 'ready' || !hasProject
+                || status === 'done' || status === 'queued' || insertingAll
+              }
               onClick={() => onInsert(record.key, record)}
               icon={status === 'done' ? <CheckOutlined /> : undefined}
             >
-              {status === 'done' ? t.table.inserted : status === 'error' ? t.table.retry : t.table.insert}
+              {status === 'done' ? t.table.inserted
+                : status === 'error' ? t.table.retry
+                : status === 'queued' ? t.table.queued
+                : t.table.insert}
             </Button>
           </Tooltip>
         )

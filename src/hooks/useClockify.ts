@@ -9,16 +9,27 @@ import type { ProjectSuggestion } from '../utils/projectMatch'
 import { readKey, writeKey } from '../utils/keyStorage'
 import type { ClockifyProject, ClockifyWorkspace } from '../utils/clockifyApi'
 import {
+  ClockifyError,
   fetchCurrentUser,
   fetchProjects,
   fetchWorkspaces,
   postTimeEntry,
 } from '../utils/clockifyApi'
+import { ROW_CONCURRENCY, mapLimited } from '../utils/rateLimit'
 import { useClockifyEntries } from './useClockifyEntries'
 
 export type { ClockifyProject, ClockifyWorkspace } from '../utils/clockifyApi'
 
-export type RowStatus = 'loading' | 'done' | 'error'
+export type RowStatus = 'queued' | 'loading' | 'done' | 'error'
+
+export interface InsertProgress {
+  done: number
+  total: number
+}
+
+function isRateLimit(err: unknown): boolean {
+  return err instanceof ClockifyError && err.status === 429
+}
 
 export function useClockify() {
   const { t } = useI18n()
@@ -31,6 +42,7 @@ export function useClockify() {
   const [loadingWorkspaces, setLoadingWorkspaces] = useState(false)
   const [loadingProjects, setLoadingProjects] = useState(false)
   const [insertingAll, setInsertingAll] = useState(false)
+  const [insertProgress, setInsertProgress] = useState<InsertProgress | null>(null)
   const [rowStatus, setRowStatus] = useState<Map<number, RowStatus>>(new Map())
   const [rowProject, setRowProject] = useState<Map<number, string>>(new Map())
   const [autoProject, setAutoProject] = useState<Map<number, ProjectSuggestion>>(new Map())
@@ -94,6 +106,7 @@ export function useClockify() {
     setRowStatus(new Map())
     setRowProject(new Map())
     setAutoProject(new Map())
+    setInsertProgress(null)
   }
 
   /** Editing one row must not wipe the other rows' inserted badges. */
@@ -192,9 +205,11 @@ export function useClockify() {
       await postTimeEntry(apiKey, selectedWorkspace!, projectId, row)
       setRowSt(idx, 'done')
       message.success(t.messages.dayInserted(formatDayMonth(row.date)))
-    } catch {
+    } catch (err) {
       setRowSt(idx, 'error')
-      message.error(t.messages.dayError(formatDayMonth(row.date)))
+      message.error(
+        isRateLimit(err) ? t.messages.rateLimited : t.messages.dayError(formatDayMonth(row.date)),
+      )
     }
     void entries.reloadRange()
   }
@@ -223,26 +238,33 @@ export function useClockify() {
     }
 
     setInsertingAll(true)
+    setInsertProgress({ done: 0, total: targets.length })
+    targets.forEach(p => setRowSt(p.i, 'queued'))
+
     let failed = 0
-    await Promise.all(
-      targets.map(async ({ i, row, projectId }) => {
-        setRowSt(i, 'loading')
-        try {
-          if (replaceDates?.has(row.date)) await entries.deleteDay(row.date)
-          await postTimeEntry(apiKey, selectedWorkspace!, projectId!, row)
-          setRowSt(i, 'done')
-        } catch {
-          setRowSt(i, 'error')
-          failed++
-        }
-      })
-    )
+    let rateLimited = false
+    await mapLimited(targets, ROW_CONCURRENCY, async ({ i, row, projectId }) => {
+      setRowSt(i, 'loading')
+      try {
+        if (replaceDates?.has(row.date)) await entries.deleteDay(row.date)
+        await postTimeEntry(apiKey, selectedWorkspace!, projectId!, row)
+        setRowSt(i, 'done')
+      } catch (err) {
+        setRowSt(i, 'error')
+        failed++
+        if (isRateLimit(err)) rateLimited = true
+      }
+      setInsertProgress(prev => (prev ? { ...prev, done: prev.done + 1 } : prev))
+    })
+
     await entries.reloadRange()
     setInsertingAll(false)
+    setInsertProgress(null)
 
     const errored = failed + invalid.length
     if (errored === 0 && skipped === 0) message.success(t.messages.allInserted)
     else message.warning(t.messages.insertSummary(targets.length - failed, errored, skipped))
+    if (rateLimited) message.error(t.messages.rateLimited)
   }
 
   return {
@@ -258,6 +280,7 @@ export function useClockify() {
     loadingWorkspaces,
     loadingProjects,
     insertingAll,
+    insertProgress,
     rowStatus,
     rowProject,
     autoProject,
